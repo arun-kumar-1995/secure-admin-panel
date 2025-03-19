@@ -6,6 +6,7 @@ import { Loader } from "./components/Loader/Loader";
 // Lazy imports
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound/PageNotFound"));
+const Login = lazy(() => import("./pages/Login/Login"));
 
 const App = () => {
   return (
