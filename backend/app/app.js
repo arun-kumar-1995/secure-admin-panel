@@ -5,6 +5,8 @@ import cors from 'cors'
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+app.set('trust proxy', true)
+
 // Use CORS middleware
 app.use(
   cors({
@@ -15,8 +17,7 @@ app.use(
   })
 )
 // import routes
-// import appRoute from './src/routes/index.js'
-// app.use('/app/v1', appRoute)
-
+import appRoute from './routes/index.js'
+app.use('/app/v1', appRoute)
 
 export default app
