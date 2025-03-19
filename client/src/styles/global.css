@@ -1,0 +1,41 @@
+/* 
+
+this file holds the global styles for the element 
+
+*/
+
+html {
+  scroll-behavior: smooth;
+  line-height: 1.432;
+  font-size: var(--font-size-base);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--clr-white);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Images and Media */
+img,
+video,
+picture,
+canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Inputs and Buttons */
+input,
+button {
+  font: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+button:hover {
+  cursor: pointer;
+}

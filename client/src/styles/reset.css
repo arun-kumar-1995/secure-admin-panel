@@ -1,0 +1,41 @@
+/* 
+
+This file holds the global reset for the element that ar mantatory
+
+Reset and normalize 
+
+*/
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  vertical-align: baseline;
+}
+
+/* Inputs and Buttons */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  margin: 0;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* LISTS */
+ul,
+ol {
+  list-style: none;
+}

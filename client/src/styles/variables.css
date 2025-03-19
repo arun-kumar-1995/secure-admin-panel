@@ -1,0 +1,52 @@
+/* 
+THis file holds the varibles used inside the project
+
+*/
+
+/* :root variables */
+:root {
+    /* Typography */
+    --font-family: "Open Sans", sans-serif;
+    --max-width: 100%;
+    --min-height: 100vh;
+    --form-min-width: 380px;
+    --wrapper-max-width: 1200px;
+  
+    /* Color palette */
+    --clr-primary: #007bff;
+    --clr-secondary: #6c757d;
+    --clr-success: #28a745;
+    --clr-danger: #dc3545;
+    --clr-warning: #ffc107;
+    --clr-info: #17a2b8;
+    --clr-light: #f8f9fa;
+    --clr-dark: #122312;
+    --clr-white: #fff;
+    --clr-bg: #e7e7e7;
+  
+    /* Font sizes */
+    --font-size-base: 62.5%;
+    --font-size-xs: 1.2rem;
+    --font-size-sm: 1.4rem;
+    --font-size-md: 2.4rem;
+    --font-size-lg: 2.8rem;
+    --font-size-xl: 3.2rem;
+  
+    /* Spacing */
+    --spacing-xs: 0.4rem;
+    --spacing-sm: 0.8rem;
+    --spacing-md: 1.2rem;
+    --spacing-lg: 1.6rem;
+    --spacing-xl: 2rem;
+  
+    /* Shadows */
+    --shadow-sm: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0px 10px 20px rgba(0, 0, 0, 0.2);
+  
+    /* Border radius */
+    --radius-sm: 0.4rem;
+    --radius-md: 0.8rem;
+    --radius-lg: 1.2rem;
+    --radius-xl: 1.6rem;
+  }

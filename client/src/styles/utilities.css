@@ -1,0 +1,25 @@
+/* 
+This file holds the custom classes defined to make our work smoothe
+
+*/
+
+/* Flex Utilities */
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.wrapper {
+  max-width: 576px;
+  margin: 0 auto;
+}

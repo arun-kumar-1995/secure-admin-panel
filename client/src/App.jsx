@@ -7,6 +7,7 @@ import { Loader } from "./components/Loader/Loader";
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound/PageNotFound"));
 const Login = lazy(() => import("./pages/Login/Login"));
+const VerifyOtp = lazy(() => import("./pages/VerifyOtp/VerifyOtp"));
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/verify-otp/:email" element={<VerifyOtp />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>

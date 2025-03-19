@@ -1,0 +1,41 @@
+/* 
+This file holds components level styles
+*/
+
+.btn {
+  border: none;
+  outline: none;
+}
+
+.form {
+  display: flex;
+  margin-top: 1.6em;
+  font-size: 1.2rem;
+}
+
+.form select {
+  padding: 0.4rem 0.8rem;
+}
+.btn-request,
+.btn-verify,
+.btn-login {
+  font-size: 1.2rem;
+  padding: 0.8rem;
+  background-color: var(--clr-secondary);
+  color: var(--clr-light);
+  min-width: 10rem;
+}
+
+.btn-request:hover,
+.btn-login:hover,
+.btn-verify:hover {
+  background-color: var(--clr-info);
+}
+
+.form input {
+  width: 100%;
+  border: 1px solid;
+  font-size: 1.2rem;
+  text-indent: 0.4rem;
+  padding: 1.2rem;
+}
