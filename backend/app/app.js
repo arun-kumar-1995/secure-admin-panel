@@ -18,6 +18,6 @@ app.use(
 )
 // import routes
 import appRoute from './routes/index.js'
-app.use('/app/v1', appRoute)
+app.use('/app', appRoute)
 
 export default app
