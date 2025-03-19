@@ -1,0 +1,25 @@
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--min-height);
+  padding: var(--spacing-sm);
+}
+
+.loader-container .loader {
+  width: 6.4rem;
+  height: 6.4rem;
+  border-radius: 50%;
+  border: 6px solid transparent;
+  border-top-color: var(--clr-primary, #3498db);
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
