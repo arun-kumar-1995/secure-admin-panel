@@ -47,7 +47,7 @@ const Dashboard = () => {
                   <td>{log.deviceInfo}</td>
                   <td>{new Date(log.createdAt).toLocaleString()}</td>
                   <td className={log.status ? "success" : "failed"}>
-                    {log.status ? "✅ Success" : "❌ Failed"}
+                    {log.status === "Success" ? "✅ Success" : "❌ Failed"}
                   </td>
                 </tr>
               ))
