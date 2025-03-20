@@ -1,0 +1,80 @@
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Title */
+.dashboard-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Table Wrapper */
+.table-container {
+  overflow-x: auto;
+}
+
+/* Table Styling */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Header */
+.dashboard-table thead {
+  background: #007bff;
+  color: white;
+}
+
+.dashboard-table th {
+  padding: 12px;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* Table Rows */
+.dashboard-table tr {
+  border-bottom: 1px solid #ddd;
+  transition: background 0.2s;
+}
+
+.dashboard-table tr:hover {
+  background: #f1f1f1;
+}
+
+/* Table Data */
+.dashboard-table td {
+  padding: 12px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Status Colors */
+.success {
+  color: green;
+  font-weight: bold;
+}
+
+.failed {
+  color: red;
+  font-weight: bold;
+}
+
+/* No Data Row */
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: #777;
+}

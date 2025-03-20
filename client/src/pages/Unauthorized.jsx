@@ -11,7 +11,7 @@ const Unauthorized = () => {
     if (!ip) return;
 
     try {
-      const response = await API.post("/auth/block-ipaddress", { ip });
+      const response = await API.post("/auth/block-ip-address", { ip });
       toast.success(response.data?.message || "IP blocked successfully");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to block IP");

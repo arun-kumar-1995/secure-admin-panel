@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { API } from "../../api";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
+import "./Dashboard.css";
 
 const Dashboard = () => {
   const [logs, setLogs] = useState([]);
@@ -12,7 +13,6 @@ const Dashboard = () => {
     const fetchLogs = async () => {
       try {
         const response = await API.get("/logs/get-logs");
-        console.log(response.data.data);
         setLogs(response.data.data.logs);
       } catch (err) {
         toast.error("Failed to fetch logs");
@@ -24,30 +24,43 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="container">
-      <h2 className="">Admin Dashboard</h2>
-      <table className="w-full border">
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>IP Address</th>
-            <th>Device Type</th>
-            <th>Timestamp</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs?.map((log, idx) => (
-            <tr key={idx} className="text-center">
-              <td>{log._id}</td>
-              <td>{log.ip}</td>
-              <td>{log.deviceInfo}</td>
-              <td>{new Date(log.createdAt).toLocaleString()}</td>
-              <td>{log.status ? "✅ Success" : "❌ Failed"}</td>
+    <div className="dashboard-container">
+      <h2 className="dashboard-title">Admin Dashboard</h2>
+
+      <div className="table-container">
+        <table className="dashboard-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>IP Address</th>
+              <th>Device Type</th>
+              <th>Timestamp</th>
+              <th>Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {logs.length > 0 ? (
+              logs.map((log, idx) => (
+                <tr key={idx}>
+                  <td>{log._id}</td>
+                  <td>{log.ip}</td>
+                  <td>{log.deviceInfo}</td>
+                  <td>{new Date(log.createdAt).toLocaleString()}</td>
+                  <td className={log.status ? "success" : "failed"}>
+                    {log.status ? "✅ Success" : "❌ Failed"}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-data">
+                  No logs available
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

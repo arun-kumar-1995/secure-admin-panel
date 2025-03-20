@@ -5,14 +5,13 @@ import { OTP } from '../models/otp.models.js'
 import { ErrorHandler } from '../shared/errorHandler.shared.js'
 import { sendEmail } from '../shared/sendEmail.shared.js'
 import { GenerateOtp } from '../shared/generateOtp.shared.js'
-import jwt from 'jsonwebtoken'
-
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
 import { Logs } from '../models/logs.models.js'
 import { isValidLocalIP } from '../shared/validateIp.shared.js'
 import { IpBlocked } from '../models/blokedIps.models.js'
 import { generateToken } from '../shared/generateToken.shared.js'
 import { sendToken } from '../shared/sendToken.Shared.js'
+import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
 
 export const getLocalIp = CatchAsyncError(async (req, res, next) => {
   const ip = getLocalIP()
@@ -51,9 +50,9 @@ export const requestOtp = CatchAsyncError(async (req, res, next) => {
 
 export const verifyOtp = CatchAsyncError(async (req, res, next) => {
   const { email, otp, deviceInfo, ip } = req.body
-  if (!email) return ErrorHandler(res, 400, 'Email is required')
 
-  if (!otp) return ErrorHandler(res, 400, 'Otp is required')
+  if (!email) return ErrorHandler(res, 400, 'Email is required')
+  if (!otp) return ErrorHandler(res, 400, 'OTP is required')
 
   const validOtp = await OTP.findOne({ email }).sort({ createdAt: -1 })
 
@@ -62,38 +61,41 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
   const user = await User.findOne({ email })
   if (!user) return ErrorHandler(res, 400, 'Invalid email address')
 
-  //  check if opt entered is same
-  if (opt === validOtp && user.loginAttempts <= 5) {
-    user[loginAttempts] = user.loginAttempts + 1
-    await user.save()
-    return ErrorHandler(res, 400, 'Incorrect otp entered')
-  }
-
-  // after 5 attempt lock the profile
-
-  if (user.loginAttempts > 5) {
-    user.accountStatus = true
+  // Check if OTP entered is the same
+  if (otp !== validOtp.otp) {
+    user.loginAttempts += 1
     await user.save()
 
-    // send email to admin
-    sendEmailToAdmin(ip)
-    return ErrorHandler(res, 400, 'Your profile is locked')
+    if (user.loginAttempts >= 5) {
+      user.accountStatus = true
+      await user.save()
+
+      // Send email to admin
+      sendEmailToAdmin(ip)
+
+      return ErrorHandler(res, 400, 'Your profile is locked')
+    }
+
+    return ErrorHandler(res, 400, 'Incorrect OTP entered')
   }
 
-  // Delete OTP after successful verification (optional)
+  // Reset login attempts on successful OTP verification
+  user.loginAttempts = 0
+  await user.save()
+
+  // Delete OTP after successful verification
   await OTP.deleteOne({ _id: validOtp._id })
 
   // CREATE LOGS
   await Logs.create({
-    ip: staticIP,
+    ip: ip || 'Unknown IP',
     deviceInfo,
     status: 'Success',
   })
 
-  // generate token
-  const token = generateToken(ip)
-
-  // send token in cookie
+  // Generate token
+  const token = await generateToken(email)
+  // Send token in cookie
   sendToken(res, token, 'OTP verified successfully')
 })
 
