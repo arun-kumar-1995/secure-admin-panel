@@ -4,10 +4,12 @@ const schema = new mongoose.Schema(
     email: {
       type: String,
       trim: true,
+      lowercase: true,
     },
     staticIP: {
       type: String,
       default: null,
+      trim: true,
     },
     loginAttempts: {
       type: Number,

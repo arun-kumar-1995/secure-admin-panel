@@ -7,13 +7,13 @@ import { sendEmail } from '../shared/sendEmail.shared.js'
 import { GenerateOtp } from '../shared/generateOtp.shared.js'
 import jwt from 'jsonwebtoken'
 
-import os from 'os'
+import { getLocalIP } from '../shared/getLocalIp.shared.js'
+import { Logs } from '../models/logs.models.js'
+import { isValidLocalIP } from '../shared/validateIp.shared.js'
 
-export const checkAuth = CatchAsyncError(async (req, res, next) => {
-  const interfaces = os.networkInterfaces()
-
-  console.log('--------', interfaces)
-  ApiResponse(res, 200, 'Ok')
+export const getLocalIp = CatchAsyncError(async (req, res, next) => {
+  const ip = getLocalIP()
+  ApiResponse(res, 200, 'Client Local Ip', { ip })
 })
 
 export const register = CatchAsyncError(async (req, res, next) => {
@@ -47,7 +47,7 @@ export const requestOtp = CatchAsyncError(async (req, res, next) => {
 })
 
 export const verifyOtp = CatchAsyncError(async (req, res, next) => {
-  const { email, otp } = req.body
+  const { email, otp, deviceInfo } = req.body
   if (!email) return ErrorHandler(res, 400, 'Email is required')
 
   if (!otp) return ErrorHandler(res, 400, 'Otp is required')
@@ -59,6 +59,13 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
   const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' })
   // Delete OTP after successful verification (optional)
   await OTP.deleteOne({ _id: validOtp._id })
+
+  // CREATE LOGS
+  await Logs.create({
+    ip: staticIP,
+    deviceInfo,
+    status: 'Success',
+  })
 
   res
     .status(200)
@@ -75,14 +82,60 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
     })
 })
 
+export const directLogin = CatchAsyncError(async (req, res, next) => {
+  const { ip, deviceInfo } = req.body;
+  
+  if (!ip) return ErrorHandler(res, 400, 'Ip Address is required')
+
+  // validate ip address
+  if (!isValidLocalIP(ip))
+    return ErrorHandler(res, 400, 'Invalid Local IP Address')
+
+  // create logs
+  await Logs.create({
+    ip: staticIP,
+    deviceInfo,
+    status: 'Success',
+  });
+
+  ApiResponse(res, 200, 'Successfully loggedin')
+})
+
 export const ipLogin = CatchAsyncError(async (req, res, next) => {
-  const { staticIP } = req.body
+  const { staticIP, deviceInfo } = req.body
   if (!staticIP) return ErrorHandler(res, 400, 'Enter Ip Address')
 
-  const user = await User.findOne({ staticIP });
-  if(!user) return ErrorHandler(res , 403 , "user not found");
+  const user = await User.findOne({ staticIP })
+  if (!user) return ErrorHandler(res, 403, 'user not found')
 
+  // if static ip assignned is not same then
+  // lock account process for 5 attempt and send email
+
+  if (user.staticIP !== staticIP) {
+    user[loginAttempts] = user.loginAttempts + 1
+    await user.save()
+
+    // CREATE LOGS
+    await Logs.create({
+      ip: staticIP,
+      deviceInfo,
+      status: 'Failed',
+    })
+  }
+
+  if (user.loginAttempts > 5) {
+    // send email
+    sendEmailToAdmin(staticIP)
+    return ErrorHandler(res, 403, 'Your account is locked')
+  }
+
+  // CREATE LOGS
+  await Logs.create({
+    ip: staticIP,
+    deviceInfo,
+    status: 'Success',
+  })
 
   // send response
-  ApiResponse(res, 200, `You are logged in`);
+  ApiResponse(res, 200, `You are logged in`)
 })

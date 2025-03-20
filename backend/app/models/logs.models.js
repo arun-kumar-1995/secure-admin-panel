@@ -2,10 +2,6 @@ import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema(
   {
-    userId: {
-      ref: 'User',
-      required: true,
-    },
     ip: {
       type: String,
       required: [true, 'Ip address is required'],
@@ -15,7 +11,8 @@ const schema = new mongoose.Schema(
       required: [true, 'Device info is required'],
     },
     status: {
-      type: Boolean,
+      type: String,
+      enum: ['Success', 'Failed'],
     },
   },
   { timestamps: true }
