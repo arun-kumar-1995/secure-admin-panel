@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API } from "../api";
+import { API } from "../../api";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
 
@@ -11,11 +11,9 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const { data } = await API.get("/auth/logs", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setLogs(data);
+        const response = await API.get("/logs/get-logs");
+        console.log(response.data.data);
+        setLogs(response.data.data.logs);
       } catch (err) {
         toast.error("Failed to fetch logs");
         navigate("/");
@@ -31,23 +29,21 @@ const Dashboard = () => {
       <table className="w-full border">
         <thead>
           <tr>
-            <th className="border p-2">Email</th>
-            <th className="border p-2">IP Address</th>
-            <th className="border p-2">Timestamp</th>
-            <th className="border p-2">Status</th>
+            <th>Id</th>
+            <th>IP Address</th>
+            <th>Device Type</th>
+            <th>Timestamp</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          {logs.map((log, idx) => (
+          {logs?.map((log, idx) => (
             <tr key={idx} className="text-center">
-              <td className="border p-2">{log.email}</td>
-              <td className="border p-2">{log.ip}</td>
-              <td className="border p-2">
-                {new Date(log.timestamp).toLocaleString()}
-              </td>
-              <td className="border p-2">
-                {log.success ? "✅ Success" : "❌ Failed"}
-              </td>
+              <td>{log._id}</td>
+              <td>{log.ip}</td>
+              <td>{log.deviceInfo}</td>
+              <td>{new Date(log.createdAt).toLocaleString()}</td>
+              <td>{log.status ? "✅ Success" : "❌ Failed"}</td>
             </tr>
           ))}
         </tbody>

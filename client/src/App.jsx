@@ -8,6 +8,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound/PageNotFound"));
 const Login = lazy(() => import("./pages/Login/Login"));
 const VerifyOtp = lazy(() => import("./pages/VerifyOtp/VerifyOtp"));
+const Unauthorized = lazy(() => import("./pages/Unauthorized"));
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
           <Route path="/" element={<Login />} />
           <Route path="/verify-otp/:email" element={<VerifyOtp />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/access-denied/:ip" element={<Unauthorized />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Suspense>

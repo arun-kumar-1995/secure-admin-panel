@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken'
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
 import { Logs } from '../models/logs.models.js'
 import { isValidLocalIP } from '../shared/validateIp.shared.js'
+import { IpBlocked } from '../models/blokedIps.models.js'
 
 export const getLocalIp = CatchAsyncError(async (req, res, next) => {
   const ip = getLocalIP()
@@ -83,8 +84,8 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
 })
 
 export const directLogin = CatchAsyncError(async (req, res, next) => {
-  const { ip, deviceInfo } = req.body;
-  
+  const { ip, deviceInfo } = req.body
+
   if (!ip) return ErrorHandler(res, 400, 'Ip Address is required')
 
   // validate ip address
@@ -96,7 +97,7 @@ export const directLogin = CatchAsyncError(async (req, res, next) => {
     ip: staticIP,
     deviceInfo,
     status: 'Success',
-  });
+  })
 
   ApiResponse(res, 200, 'Successfully loggedin')
 })
@@ -138,4 +139,20 @@ export const ipLogin = CatchAsyncError(async (req, res, next) => {
 
   // send response
   ApiResponse(res, 200, `You are logged in`)
+})
+
+export const blockIpAddress = CatchAsyncError(async (req, res, next) => {
+  const { ip } = req.body
+
+  if (!ip)
+    return ErrorHandler(
+      res,
+      400,
+      'Ip address is required to automatically blocked'
+    )
+
+  // blocked ip address
+  const blocked = await IpBlocked.create({ ip })
+
+  ApiResponse(res, 200, 'Ip address is blocked')
 })
