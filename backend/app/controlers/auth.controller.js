@@ -74,3 +74,15 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
       token,
     })
 })
+
+export const ipLogin = CatchAsyncError(async (req, res, next) => {
+  const { staticIP } = req.body
+  if (!staticIP) return ErrorHandler(res, 400, 'Enter Ip Address')
+
+  const user = await User.findOne({ staticIP });
+  if(!user) return ErrorHandler(res , 403 , "user not found");
+
+
+  // send response
+  ApiResponse(res, 200, `You are logged in`);
+})

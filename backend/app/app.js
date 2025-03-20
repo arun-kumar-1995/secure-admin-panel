@@ -20,4 +20,8 @@ app.use(
 import appRoute from './routes/index.js'
 app.use('/app', appRoute)
 
+// global middleware
+import { errorMiddleware } from './middlewares/error.middleware.js'
+app.use(errorMiddleware)
+
 export default app
