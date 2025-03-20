@@ -13,6 +13,14 @@ import { generateToken } from '../shared/generateToken.shared.js'
 import { sendToken } from '../shared/sendToken.Shared.js'
 import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
 
+// log Attempts
+export const logAttempt = async (ip, deviceInfo, status) => {
+  await Logs.create({ ip: ip || 'Unknown IP', deviceInfo, status })
+}
+
+// findUserByEmail
+export const findUserByEmail = async (email) => await User.findOne({ email })
+
 export const getLocalIp = CatchAsyncError(async (req, res, next) => {
   const ip = getLocalIP()
   ApiResponse(res, 200, 'Client Local Ip', { ip })
@@ -31,7 +39,7 @@ export const requestOtp = CatchAsyncError(async (req, res, next) => {
   const { email } = req.body
   if (!email) return ErrorHandler(res, 400, 'Email is required')
 
-  const user = await User.findOne({ email })
+  const user = await findUserByEmail(email)
   if (!user) return ErrorHandler(res, 400, 'User not found')
 
   // generate 6 digit otp;
@@ -58,9 +66,12 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
 
   if (!validOtp) return ErrorHandler(res, 400, 'Invalid or expired OTP')
 
-  const user = await User.findOne({ email })
-  if (!user) return ErrorHandler(res, 400, 'Invalid email address')
+  const user = await findUserByEmail(email)
 
+  if (!user) {
+    logAttempt(ip, deviceInfo, 'Failed')
+    return ErrorHandler(res, 400, 'Invalid email address')
+  }
   // Check if OTP entered is the same
   if (otp !== validOtp.otp) {
     user.loginAttempts += 1
@@ -87,11 +98,7 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
   await OTP.deleteOne({ _id: validOtp._id })
 
   // CREATE LOGS
-  await Logs.create({
-    ip: ip || 'Unknown IP',
-    deviceInfo,
-    status: 'Success',
-  })
+  logAttempt(ip, deviceInfo, 'Success')
 
   // Generate token
   const token = await generateToken(email)
@@ -104,21 +111,21 @@ export const ipLogin = CatchAsyncError(async (req, res, next) => {
   if (!staticIP) return ErrorHandler(res, 400, 'Enter Ip Address')
 
   const user = await User.findOne({ staticIP })
-  if (!user) return ErrorHandler(res, 403, 'user not found')
-
+  if (!user) {
+    // CREATE LOGS
+    logAttempt(staticIP, deviceInfo, 'Failed')
+    return ErrorHandler(res, 400, 'Invalid Ip Address entered')
+  }
   // if static ip assignned is not same then
   // lock account process for 5 attempt and send email
 
   if (user.staticIP !== staticIP) {
-    user[loginAttempts] = user.loginAttempts + 1
+    user.loginAttempts = user.loginAttempts + 1
     await user.save()
 
     // CREATE LOGS
-    await Logs.create({
-      ip: staticIP,
-      deviceInfo,
-      status: 'Failed',
-    })
+    logAttempt(staticIP, deviceInfo, 'Failed')
+    return ErrorHandler(res, 400, 'Invalid Ip Address entered')
   }
 
   if (user.loginAttempts > 5) {
@@ -130,11 +137,7 @@ export const ipLogin = CatchAsyncError(async (req, res, next) => {
   }
 
   // CREATE LOGS
-  await Logs.create({
-    ip: staticIP,
-    deviceInfo,
-    status: 'Success',
-  })
+  logAttempt(staticIP, deviceInfo, 'Success')
 
   // generate token
   const token = await generateToken(staticIP)
