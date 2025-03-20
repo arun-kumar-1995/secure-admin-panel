@@ -11,11 +11,14 @@ const Login = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const requestOtp = async () => {
+  
+  const requestOtp = async (e) => {
+    e.preventDefault();
     try {
       await API.post("/auth/send-otp", { email });
       toast.success("An OTP sent to your email");
-      navigate(`/verify-otp/{email}`);
+      console.log(email);
+      navigate(`/verify-otp/${email}`);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to send OTP");
     }
