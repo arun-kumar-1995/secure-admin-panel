@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { API } from "../../api";
 import { useToast } from "../../contexts/ToastContext";
 import { handleAppRouting } from "../../utils/handleAppRouting";
+import { getDeviceInfo } from "../../utils/deviceInfo";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -28,7 +29,7 @@ const Login = () => {
       const response = await API.get("/auth/get-ip");
       const userIp = response.data?.data?.ip;
       setDirectIp(userIp);
-      
+
       // Now handle routing
       const route = handleAppRouting(userIp);
       navigate(route);
@@ -40,6 +41,21 @@ const Login = () => {
   useEffect(() => {
     getIp();
   }, []);
+
+  const handleIpLogin = async (e) => {
+    e.preventDefault();
+    const deviceInfo = getDeviceInfo();
+    try {
+      const response = await API.post("/auth/ip-login", {
+        staticIP: ipAddress,
+        deviceInfo,
+      });
+      toast.success("An OTP was sent to your email");
+      navigate("dashboard");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send OTP");
+    }
+  };
 
   return (
     <div className="container">
@@ -64,6 +80,7 @@ const Login = () => {
                 className="email-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="on"
               />
               <button onClick={requestOtp} className="btn btn-request">
                 Request OTP
@@ -77,8 +94,9 @@ const Login = () => {
                 className="ip-input"
                 value={ipAddress}
                 onChange={(e) => setIpAddress(e.target.value)}
+                autoComplete="on"
               />
-              <button onClick={requestOtp} className="btn btn-login">
+              <button onClick={handleIpLogin} className="btn btn-login">
                 Login
               </button>
             </>
