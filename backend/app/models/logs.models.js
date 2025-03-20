@@ -12,7 +12,7 @@ const schema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Success', 'Failed'],
+      enum: ['Success', 'Failed', 'Blocked'],
     },
   },
   { timestamps: true }

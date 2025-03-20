@@ -1,8 +1,9 @@
 import mongoose from 'mongoose'
 const schema = new mongoose.Schema(
   {
-    ip: {
-      type: String,
+    blockedIps: {
+      type: [String],
+      default: [],
     },
   },
   { timestamps: true }
