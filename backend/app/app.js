@@ -1,13 +1,24 @@
+// * GLOBAL Imports
+
 import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import compression from 'compression'
+import appRoute from './routes/index.js'
+import { errorMiddleware } from './middlewares/error.middleware.js'
+
+// * Define app
 const app = express()
 
-import cors from 'cors'
+// * Security, Compression & Parser
+
+app.use(helmet())
+app.use(compression())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
 app.set('trust proxy', true)
 
-// Use CORS middleware
+// * Use CORS middleware
 app.use(
   cors({
     origin: [process.env.FRONTEND_URL],
@@ -16,12 +27,11 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 )
-// import routes
-import appRoute from './routes/index.js'
+
+// * Route
 app.use('/app', appRoute)
 
-// global middleware
-import { errorMiddleware } from './middlewares/error.middleware.js'
+// * error middleware
 app.use(errorMiddleware)
 
 export default app

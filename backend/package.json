@@ -15,14 +15,17 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "chalk": "^5.4.1",
     "cross-env": "^7.0.3",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3"
   },
   "dependencies": {
+    "compression": "^1.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
     "nodemailer": "^6.10.0"
