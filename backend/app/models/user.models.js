@@ -1,26 +1,14 @@
 import mongoose from 'mongoose'
-const schema = new mongoose.Schema(
-  {
-    email: {
-      type: String,
-      trim: true,
-      lowercase: true,
-    },
-    staticIP: {
-      type: String,
-      default: null,
-      trim: true,
-    },
-    loginAttempts: {
-      type: Number,
-      default: 0,
-    },
-    accountStatus: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  { timestamps: true }
-)
+import { UserSchema } from '../schemas/user.schemas.js'
 
-export const User = mongoose.model('User', schema)
+UserSchema.statics = {
+  async findUserByEmail(email) {
+    return await this.findOne({ email })
+  },
+
+  async createUser(body) {
+    return await this.create(body)
+  },
+}
+
+export const User = mongoose.model('User', UserSchema)

@@ -13,4 +13,6 @@ export const HttpStatus = {
   BAD_GATEWAY: { statusCode: 502, code: 'BadGateway' },
   SERVICE_UNAVAILABLE: { statusCode: 503, code: 'ServiceUnavailable' },
   GATEWAY_TIMEOUT: { statusCode: 504, code: 'GatewayTimeout' },
+  SUCCESS: { statusCode: 200, code: 'Success' },
+  CREATED: { statusCode: 201, code: 'Created' },
 }

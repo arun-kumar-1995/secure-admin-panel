@@ -1,12 +1,12 @@
 import { CatchAsyncError } from '../shared/catchAsyncError.shared.js'
-import { ApiResponse } from '../shared/apiResponse.shared.js'
+import { APIResponse } from '../shared/apiResponse.shared.js'
 import { User } from '../models/user.models.js'
-import { OTP } from '../models/otp.models.js'
+import { OTP } from '../schemas/otp.schemas.js'
 import { APIError, ErrorHandler } from '../shared/errorHandler.shared.js'
 import { sendEmail } from '../shared/sendEmail.shared.js'
 import { GenerateOtp } from '../shared/generateOtp.shared.js'
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
-import { Logs } from '../models/logs.models.js'
+import { Logs } from '../schemas/logs.schemas.js'
 import { isValidLocalIP } from '../shared/validateIp.shared.js'
 import { IpBlocked } from '../models/blokedIps.models.js'
 import { generateToken } from '../shared/generateToken.shared.js'
@@ -22,33 +22,33 @@ export const logAttempt = async (ip, deviceInfo, status) => {
 // findUserByEmail
 export const findUserByEmail = async (email) => await User.findOne({ email })
 
-export const getLocalIp = CatchAsyncError(async (req, res, next) => {
+export const getLocalIp = CatchAsyncError(async (request, response, next) => {
   const ip = getLocalIP()
-  ApiResponse(res, 200, 'Client Local Ip', { ip })
+  APIResponse(response, 200, 'Client Local Ip', { ip })
 })
 
-export const register = CatchAsyncError(async (req, res, next) => {
-  const { email } = req.body
+export const register = CatchAsyncError(async (request, response, next) => {
+  const { email } = request.body
   if (!email)
     return APIError(
-      req,
-      res,
+      request,
+      response,
       HttpStatus.INVALID_REQUEST,
       "Missing required parameter: - 'email'"
     )
 
-  let user = await User.findOne({ email })
-  if (user) return ErrorHandler(res, 403, 'Email already in use')
-  user = await User.create(email)
-  return ApiResponse(res, 200, 'User registered', { user })
+  let user = await User.findUserByEmail(email)
+  if (user) return ErrorHandler(response, 403, 'Email already in use')
+  user = await User.createUser(email)
+  return APIResponse(response, HttpStatus.SUCCESS, 'User registered', { user })
 })
 
-export const requestOtp = CatchAsyncError(async (req, res, next) => {
-  const { email } = req.body
-  if (!email) return ErrorHandler(res, 400, 'Email is required')
+export const requestOtp = CatchAsyncError(async (request, response, next) => {
+  const { email } = request.body
+  if (!email) return ErrorHandler(response, 400, 'Email is required')
 
   const user = await findUserByEmail(email)
-  if (!user) return ErrorHandler(res, 400, 'User not found')
+  if (!user) return ErrorHandler(response, 400, 'User not found')
 
   // generate 6 digit otp;
   const otp = GenerateOtp()
@@ -61,24 +61,24 @@ export const requestOtp = CatchAsyncError(async (req, res, next) => {
   sendEmail(user.email, userOtp.otp)
 
   // send response
-  ApiResponse(res, 200, `An otp is send to email ${user.email}`)
+  return APIResponse(response, 200, `An otp is send to email ${user.email}`)
 })
 
-export const verifyOtp = CatchAsyncError(async (req, res, next) => {
-  const { email, otp, deviceInfo, ip } = req.body
+export const verifyOtp = CatchAsyncError(async (request, response, next) => {
+  const { email, otp, deviceInfo, ip } = request.body
 
-  if (!email) return ErrorHandler(res, 400, 'Email is required')
-  if (!otp) return ErrorHandler(res, 400, 'OTP is required')
+  if (!email) return ErrorHandler(response, 400, 'Email is required')
+  if (!otp) return ErrorHandler(response, 400, 'OTP is required')
 
   const validOtp = await OTP.findOne({ email }).sort({ createdAt: -1 })
 
-  if (!validOtp) return ErrorHandler(res, 400, 'Invalid or expired OTP')
+  if (!validOtp) return ErrorHandler(response, 400, 'Invalid or expired OTP')
 
   const user = await findUserByEmail(email)
 
   if (!user) {
     logAttempt(ip, deviceInfo, 'Failed')
-    return ErrorHandler(res, 400, 'Invalid email address')
+    return ErrorHandler(response, 400, 'Invalid email address')
   }
   // Check if OTP entered is the same
   if (otp !== validOtp.otp) {
@@ -92,10 +92,10 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
       // Send email to admin
       sendEmailToAdmin(ip)
 
-      return ErrorHandler(res, 400, 'Your profile is locked')
+      return ErrorHandler(response, 400, 'Your profile is locked')
     }
 
-    return ErrorHandler(res, 400, 'Incorrect OTP entered')
+    return ErrorHandler(response, 400, 'Incorrect OTP entered')
   }
 
   // Reset login attempts on successful OTP verification
@@ -111,18 +111,18 @@ export const verifyOtp = CatchAsyncError(async (req, res, next) => {
   // Generate token
   const token = await generateToken(email)
   // Send token in cookie
-  sendToken(res, token, 'OTP verified successfully')
+  sendToken(response, token, 'OTP verified successfully')
 })
 
-export const ipLogin = CatchAsyncError(async (req, res, next) => {
-  const { staticIP, deviceInfo } = req.body
-  if (!staticIP) return ErrorHandler(res, 400, 'Enter Ip Address')
+export const ipLogin = CatchAsyncError(async (request, response, next) => {
+  const { staticIP, deviceInfo } = request.body
+  if (!staticIP) return ErrorHandler(response, 400, 'Enter Ip Address')
 
   const user = await User.findOne({ staticIP })
   if (!user) {
     // CREATE LOGS
     logAttempt(staticIP, deviceInfo, 'Failed')
-    return ErrorHandler(res, 400, 'Invalid Ip Address entered')
+    return ErrorHandler(response, 400, 'Invalid Ip Address entered')
   }
   // if static ip assignned is not same then
   // lock account process for 5 attempt and send email
@@ -133,7 +133,7 @@ export const ipLogin = CatchAsyncError(async (req, res, next) => {
 
     // CREATE LOGS
     logAttempt(staticIP, deviceInfo, 'Failed')
-    return ErrorHandler(res, 400, 'Invalid Ip Address entered')
+    return ErrorHandler(response, 400, 'Invalid Ip Address entered')
   }
 
   if (user.loginAttempts > 5) {
@@ -141,7 +141,7 @@ export const ipLogin = CatchAsyncError(async (req, res, next) => {
     sendEmailToAdmin(staticIP)
     user.accountStatus = true
     await user.save()
-    return ErrorHandler(res, 403, 'Your account is locked')
+    return ErrorHandler(response, 403, 'Your account is locked')
   }
 
   // CREATE LOGS
@@ -151,33 +151,39 @@ export const ipLogin = CatchAsyncError(async (req, res, next) => {
   const token = await generateToken(staticIP)
 
   // send token in cookie
-  sendToken(res, token, 'You are logged in')
+  sendToken(response, token, 'You are logged in')
 })
 
-export const blockIpAddress = CatchAsyncError(async (req, res, next) => {
-  const { ip } = req.body
+export const blockIpAddress = CatchAsyncError(
+  async (request, response, next) => {
+    const { ip } = request.body
 
-  if (!ip) {
-    return ErrorHandler(res, 400, 'IP address is required to be blocked.')
+    if (!ip) {
+      return ErrorHandler(
+        response,
+        400,
+        'IP address is required to be blocked.'
+      )
+    }
+
+    // Find existing blocked list
+    let blockedList = await IpBlocked.findOne()
+
+    if (!blockedList) {
+      // Create new document if none exists
+      blockedList = await IpBlocked.create({ blockedIps: [ip] })
+      return APIResponse(response, 200, 'IP address is successfully blocked.')
+    }
+
+    // Check if IP is already blocked
+    if (blockedList.blockedIps.includes(ip)) {
+      return ErrorHandler(response, 400, 'IP address is already blocked.')
+    }
+
+    // Add new IP and save
+    blockedList.blockedIps.push(ip)
+    await blockedList.save()
+
+    return APIResponse(response, 200, 'IP address is successfully blocked.')
   }
-
-  // Find existing blocked list
-  let blockedList = await IpBlocked.findOne()
-
-  if (!blockedList) {
-    // Create new document if none exists
-    blockedList = await IpBlocked.create({ blockedIps: [ip] })
-    return ApiResponse(res, 200, 'IP address is successfully blocked.')
-  }
-
-  // Check if IP is already blocked
-  if (blockedList.blockedIps.includes(ip)) {
-    return ErrorHandler(res, 400, 'IP address is already blocked.')
-  }
-
-  // Add new IP and save
-  blockedList.blockedIps.push(ip)
-  await blockedList.save()
-
-  return ApiResponse(res, 200, 'IP address is successfully blocked.')
-})
+)

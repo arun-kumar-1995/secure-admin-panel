@@ -1,11 +1,11 @@
-export const ErrorHandler = (res, statusCode, message) => {
-  res.status(statusCode).json({
+export const ErrorHandler = (response, statusCode, message) => {
+  response.status(statusCode).json({
     success: false,
     status: statusCode,
     message,
   })
 }
-export const APIError = (req, res, http, message) => {
+export const APIError = (request, response, http, message) => {
   const { statusCode, code } = http
 
   // * handle exceptions
@@ -17,11 +17,11 @@ export const APIError = (req, res, http, message) => {
     code,
     statusCode,
     message: message || 'An error has occurred',
-    path: req.originalUrl || 'Unknown path',
+    path: request.originalUrl || 'Unknown path',
     errors: [
       {
         message,
-        domain: req.hostname,
+        domain: request.hostname,
       },
     ],
     meta: {
@@ -29,5 +29,5 @@ export const APIError = (req, res, http, message) => {
       requestId: '', // user ID or IP address
     },
   }
-  res.status(statusCode).json({ error: errorResponse })
+  response.status(statusCode).json({ error: errorResponse })
 }
