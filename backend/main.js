@@ -1,5 +1,5 @@
 import './configs/loadEnv.configs.js'
-import log from './app/shared/logger.shared.js'
+import { logger as log } from './app/shared/logger.shared.js'
 import app from './app/app.js'
 import connectDB from './configs/db.configs.js'
 

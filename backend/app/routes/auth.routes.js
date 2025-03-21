@@ -5,10 +5,12 @@ import {
   verifyOtp,
   ipLogin,
   blockIpAddress,
+  register,
 } from '../controlers/auth.controller.js'
 
 const router = express.Router()
 
+router.route('/sign-in').post(register)
 router.route('/get-ip').get(getLocalIp)
 router.route('/send-otp').post(requestOtp)
 router.route('/verify-otp').post(verifyOtp)

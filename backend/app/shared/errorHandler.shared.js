@@ -5,3 +5,26 @@ export const ErrorHandler = (res, statusCode, message) => {
     message,
   })
 }
+export const APIError = (req, res, http, message) => {
+  const { statusCode, code } = http
+
+  // * handle exceptions
+  if (!message) throw new Error("Missing required parameter - 'message'")
+
+  // * Error response object
+  const errorResponse = {
+    success: false,
+    code,
+    statusCode,
+    message: message || 'An error has occurred',
+    path: req.originalUrl || 'Unknown path',
+    error: [
+      {
+        domain: req.hostname,
+        timestamp: new Date().toISOString(),
+        requestId: '', // user ID or IP address
+      },
+    ],
+  }
+  res.status(statusCode).json({ error: errorResponse })
+}

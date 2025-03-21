@@ -2,7 +2,7 @@ import { CatchAsyncError } from '../shared/catchAsyncError.shared.js'
 import { ApiResponse } from '../shared/apiResponse.shared.js'
 import { User } from '../models/user.models.js'
 import { OTP } from '../models/otp.models.js'
-import { ErrorHandler } from '../shared/errorHandler.shared.js'
+import { APIError, ErrorHandler } from '../shared/errorHandler.shared.js'
 import { sendEmail } from '../shared/sendEmail.shared.js'
 import { GenerateOtp } from '../shared/generateOtp.shared.js'
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
@@ -12,6 +12,7 @@ import { IpBlocked } from '../models/blokedIps.models.js'
 import { generateToken } from '../shared/generateToken.shared.js'
 import { sendToken } from '../shared/sendToken.Shared.js'
 import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
+import { HttpStatus } from '../constants/httpStatus.constants.js'
 
 // log Attempts
 export const logAttempt = async (ip, deviceInfo, status) => {
@@ -28,6 +29,13 @@ export const getLocalIp = CatchAsyncError(async (req, res, next) => {
 
 export const register = CatchAsyncError(async (req, res, next) => {
   const { email } = req.body
+  if (!email)
+    return APIError(
+      req,
+      res,
+      HttpStatus.INVALID_REQUEST,
+      "Missing required parameter: - 'email'"
+    )
 
   let user = await User.findOne({ email })
   if (user) return ErrorHandler(res, 403, 'Email already in use')
