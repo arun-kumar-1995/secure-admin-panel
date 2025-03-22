@@ -5,11 +5,11 @@ export const ErrorHandler = (response, statusCode, message) => {
     message,
   })
 }
-export const APIError = (request, response, http, message) => {
+export const APIError = (response, http, message) => {
   const { statusCode, code } = http
 
   // * handle exceptions
-  if (!message) throw new Error("Missing required parameter - 'message'");
+  if (!message) throw new Error("Missing required parameter - 'message'")
 
   // * Error response object
   const errorResponse = {
@@ -17,16 +17,17 @@ export const APIError = (request, response, http, message) => {
     code,
     statusCode,
     message: message || 'An error has occurred',
-    path: request.originalUrl || 'Unknown path',
-    errors: [
-      {
-        message,
-        domain: request.hostname,
-      },
-    ],
+    // path: request.originalUrl || 'Unknown path',
+    // errors: [
+    //   {
+    //     message,
+    //     domain: request.hostname,
+    //   },
+    // ],
     meta: {
       timestamp: new Date().toISOString(),
-      requestId: '', // user ID or IP address
+      domain: 'localhost',
+      // requestId: '', // user ID or IP address
     },
   }
   response.status(statusCode).json({ error: errorResponse })

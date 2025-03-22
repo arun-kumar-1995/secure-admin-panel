@@ -1,5 +1,7 @@
-import mongoose from 'mongoose'
-export const UserSchema = new mongoose.Schema(
+'use strict'
+
+import { Schema, model } from 'mongoose'
+const schema = new Schema(
   {
     email: {
       type: String,
@@ -22,3 +24,5 @@ export const UserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 )
+
+export const User = model('User', schema)

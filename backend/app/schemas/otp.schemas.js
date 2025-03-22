@@ -1,6 +1,8 @@
-import mongoose from 'mongoose'
+'use strict'
 
-const schema = new mongoose.Schema(
+import { Schema, model } from 'mongoose'
+
+const schema = new Schema(
   {
     email: {
       type: String,
@@ -19,4 +21,4 @@ const schema = new mongoose.Schema(
   { timestamps: true }
 )
 
-export const OTP = mongoose.model('OTP', schema);
+export const OTP = model('OTP', schema)

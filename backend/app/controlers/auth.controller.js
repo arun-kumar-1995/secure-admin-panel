@@ -1,12 +1,12 @@
 import { CatchAsyncError } from '../shared/catchAsyncError.shared.js'
 import { APIResponse } from '../shared/apiResponse.shared.js'
-import { User } from '../models/user.models.js'
+import { UserStatics } from '../models/user.models.js'
 import { OTP } from '../schemas/otp.schemas.js'
 import { APIError, ErrorHandler } from '../shared/errorHandler.shared.js'
 import { sendEmail } from '../shared/sendEmail.shared.js'
 import { GenerateOtp } from '../shared/generateOtp.shared.js'
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
-import { Logs } from '../schemas/logs.schemas.js'
+import { LogStatics } from '../models/logs.models.js'
 import { isValidLocalIP } from '../shared/validateIp.shared.js'
 import { IpBlocked } from '../models/blokedIps.models.js'
 import { generateToken } from '../shared/generateToken.shared.js'
@@ -31,15 +31,15 @@ export const register = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
   if (!email)
     return APIError(
-      request,
       response,
       HttpStatus.INVALID_REQUEST,
       "Missing required parameter: - 'email'"
     )
 
-  let user = await User.findUserByEmail(email)
-  if (user) return ErrorHandler(response, 403, 'Email already in use')
-  user = await User.createUser(email)
+  let user = await UserStatics.findUserByEmail(email)
+  if (user)
+    return APIError(response, HttpStatus.CONFLICT, 'Email already in use')
+  user = await UserStatics.createUser(email)
   return APIResponse(response, HttpStatus.SUCCESS, 'User registered', { user })
 })
 

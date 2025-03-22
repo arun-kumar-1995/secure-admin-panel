@@ -1,6 +1,8 @@
-import mongoose from 'mongoose'
+'use strict';
 
-const schema = new mongoose.Schema(
+import { Schema , model } from 'mongoose'
+
+const schema = new Schema(
   {
     ip: {
       type: String,
@@ -18,4 +20,4 @@ const schema = new mongoose.Schema(
   { timestamps: true }
 )
 
-export const Logs = mongoose.model('Logs', schema);
+export const Logs = model('Log', schema);

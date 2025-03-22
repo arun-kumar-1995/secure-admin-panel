@@ -1,6 +1,6 @@
- import { Logs } from "../schemas/logs.schemas.js";
+'use strict'
 
+import { Logs } from '../schemas/logs.schemas.js'
 
- Logs.statics = {
-  
- }
+// * define logs statics for data layer
+export const LogStatics = {}

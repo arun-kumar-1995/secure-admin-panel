@@ -1,14 +1,14 @@
-import mongoose from 'mongoose'
-import { UserSchema } from '../schemas/user.schemas.js'
+'use strict'
 
-UserSchema.statics = {
+import { User } from '../schemas/user.schemas.js'
+
+// * User statics
+export const UserStatics = {
   async findUserByEmail(email) {
-    return await this.findOne({ email })
+    return await User.findOne({ email })
   },
 
   async createUser(body) {
-    return await this.create(body)
+    return await User.create(body)
   },
 }
-
-export const User = mongoose.model('User', UserSchema)

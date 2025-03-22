@@ -1,5 +1,8 @@
-import mongoose from 'mongoose'
-const schema = new mongoose.Schema(
+'use strict'
+
+import {Schema , model } from 'mongoose';
+
+const schema = new Schema(
   {
     blockedIps: {
       type: [String],
@@ -9,4 +12,4 @@ const schema = new mongoose.Schema(
   { timestamps: true }
 )
 
-export const IpBlocked = mongoose.model('IpBlocked', schema)
+export const IpBlocked = model('IpBlocked', schema)
