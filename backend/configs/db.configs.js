@@ -1,15 +1,25 @@
 import mongoose from 'mongoose'
-
+import { logger as log } from '../app/shared/logger.shared.js'
 const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    log.warn('[MongoDB] Already Connected');
+    return
+  }
+
   try {
     const conn = await mongoose.connect(process.env.MONGO_URL, {
+      dbName: process.env.DB_NAME,
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      dbName: process.env.DB_NAME,
+      maxPoolSize: 10, // Optimize for performance with connection pooling
+      minPoolSize: 2, // Keep minimum connections alive
+      serverSelectionTimeoutMS: 5000, // Prevent long waits on startup
+      socketTimeoutMS: 45000, // Keep sockets open for better performance
     })
-    console.log(`[MongoDB Connected] \n ${conn.connection.host}`)
+
+    log.info(`[MongoDB Connected] \n ${conn.connection.host}`)
   } catch (err) {
-    console.error('ERROR: ' + err.message)
+    log.error(`[MongoDB Connection Error] \n ${err.message}`)
     process.exit(1)
   }
 }
