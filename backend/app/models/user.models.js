@@ -31,7 +31,7 @@ class UserModel extends Model {
   }
 
   // ==========================
-  // ⚡ User-Specific Methods ⚡
+  //  User-Specific Methods
   // ==========================
 
   /**

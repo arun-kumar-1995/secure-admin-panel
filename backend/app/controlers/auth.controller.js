@@ -13,6 +13,7 @@ import { generateToken } from '../shared/generateToken.shared.js'
 import { sendToken } from '../shared/sendToken.Shared.js'
 import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
 import { HttpStatus } from '../constants/httpStatus.constants.js'
+import { UserService } from '../services/user.services.js'
 
 // log Attempts
 export const logAttempt = async (ip, deviceInfo, status) => {
@@ -36,12 +37,13 @@ export const register = CatchAsyncError(async (request, response, next) => {
       "Missing required parameter: - 'email'"
     )
 
-  let user = await UserModal.findUserByEmail(email);
-  if (user)
-    return APIError(response, HttpStatus.CONFLICT, 'Email already in use')
-  user = await UserStatics.createUser(email)
+    const user = await UserService.registerUser(response , request.body);
+  // let user = await UserModal.findUserByEmail(email);
+  // if (user)
+  //   return APIError(response, HttpStatus.CONFLICT, 'Email already in use')
+  // user = await UserStatics.createUser(email)
   return APIResponse(response, HttpStatus.SUCCESS, 'User registered', { user })
-})
+});
 
 export const requestOtp = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
