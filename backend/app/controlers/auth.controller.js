@@ -1,6 +1,6 @@
 import { CatchAsyncError } from '../shared/catchAsyncError.shared.js'
 import { APIResponse } from '../shared/apiResponse.shared.js'
-import { UserStatics } from '../models/user.models.js'
+import { UserModal } from '../models/user.models.js'
 import { OTP } from '../schemas/otp.schemas.js'
 import { APIError, ErrorHandler } from '../shared/errorHandler.shared.js'
 import { sendEmail } from '../shared/sendEmail.shared.js'
@@ -36,7 +36,7 @@ export const register = CatchAsyncError(async (request, response, next) => {
       "Missing required parameter: - 'email'"
     )
 
-  let user = await UserStatics.findUserByEmail(email)
+  let user = await UserModal.findUserByEmail(email);
   if (user)
     return APIError(response, HttpStatus.CONFLICT, 'Email already in use')
   user = await UserStatics.createUser(email)
