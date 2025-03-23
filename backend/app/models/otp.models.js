@@ -1,15 +1,39 @@
-'use strict';
+'use strict'
 
+/**
+ *  Import required modules
+ */
+
+import { Model } from '../helpers/baseModel.helpers.js'
 import { OTP } from '../schemas/otp.schemas.js'
 
-//  * otp data layer
-export const OtpStatics = {
-  // * Get OTP by email
-  async getOtpByEmail(email) {
-    const otp = await OTP.findOne({ email }).populate('user', 'email')
-    if (!otp) {
-      throw new ErrorHandler(404, 'No OTP found for this email')
-    }
-    return otp
-  },
+/**
+ * OTP Model class
+ *
+ * This class extends the base `Model` class, providing additional
+ * OTP-specific utility functions to interact with the database.
+ */
+
+class OtpModal extends Model {
+  /**
+   * @constructor {Object} otpModel -  it accepts otp models
+   */
+  constructor(otpModel) {
+    super(otpModel)
+
+    this.Otp = otpModel
+  }
+
+  // ==========================
+  //  Otp Specific methods
+  // ==========================
+
+  async createOtp(props) {
+    return await this.Otp.create(props)
+  }
 }
+
+/**
+ * Export the opt model as singleton
+ */
+export const OtpModel = new OtpModal(OTP)

@@ -34,6 +34,10 @@ class Service {
       return APIError(response, HttpStatus.CONFLICT, 'Email already registered')
     return await UserModal.createUser(newUser)
   }
+
+  async validateUserByEmail(email) {
+    return await UserModal.findUserByEmail(email);
+  }
 }
 
 /**

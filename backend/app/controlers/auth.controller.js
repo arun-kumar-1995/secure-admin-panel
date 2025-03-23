@@ -14,6 +14,8 @@ import { sendToken } from '../shared/sendToken.Shared.js'
 import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
 import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { UserService } from '../services/user.services.js'
+import { validate } from '../shared/validation.shared.js'
+import { OtpService } from '../services/otp.services.js'
 
 // log Attempts
 export const logAttempt = async (ip, deviceInfo, status) => {
@@ -30,6 +32,9 @@ export const getLocalIp = CatchAsyncError(async (request, response, next) => {
 
 export const register = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
+  const validation = validate(request.body, { email })
+  if (!validation.isValid) {
+  }
   if (!email)
     return APIError(
       response,
@@ -37,33 +42,40 @@ export const register = CatchAsyncError(async (request, response, next) => {
       "Missing required parameter: - 'email'"
     )
 
-    const user = await UserService.registerUser(response , request.body);
-  // let user = await UserModal.findUserByEmail(email);
-  // if (user)
-  //   return APIError(response, HttpStatus.CONFLICT, 'Email already in use')
-  // user = await UserStatics.createUser(email)
+  const user = await UserService.registerUser(response, request.body)
   return APIResponse(response, HttpStatus.SUCCESS, 'User registered', { user })
-});
+})
 
 export const requestOtp = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
-  if (!email) return ErrorHandler(response, 400, 'Email is required')
+  if (!email)
+    return APIError(
+      response,
+      HttpStatus.INVALID_REQUEST,
+      "Missing required parameter: - 'email'"
+    )
 
-  const user = await findUserByEmail(email)
-  if (!user) return ErrorHandler(response, 400, 'User not found')
+  const user = await UserService.validateUserByEmail(email)
+  if (!user)
+    return APIError(
+      response,
+      HttpStatus.NOT_FOUND,
+      `Email:'${email}' is not registered`
+    )
 
-  // generate 6 digit otp;
-  const otp = GenerateOtp()
-  // create otp
-  const userOtp = await OTP.create({
-    email,
-    otp,
-  })
+  const userOtp = await OtpService.creatOtp(response, email)
+
   // send mail
-  sendEmail(user.email, userOtp.otp)
+  if (userOtp) {
+    sendEmail(user.email, userOtp)
+  }
 
   // send response
-  return APIResponse(response, 200, `An otp is send to email ${user.email}`)
+  return APIResponse(
+    response,
+    HttpStatus.SUCCESS,
+    `An otp is send to email ${user.email}`
+  )
 })
 
 export const verifyOtp = CatchAsyncError(async (request, response, next) => {

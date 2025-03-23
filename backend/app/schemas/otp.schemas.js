@@ -1,4 +1,7 @@
 'use strict'
+/**
+ *  import required module
+ */
 
 import { Schema, model } from 'mongoose'
 
@@ -20,5 +23,9 @@ const schema = new Schema(
   },
   { timestamps: true }
 )
+
+/**
+ *  Export model
+ **/
 
 export const OTP = model('OTP', schema)
