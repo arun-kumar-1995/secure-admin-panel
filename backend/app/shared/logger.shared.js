@@ -7,7 +7,7 @@ class Logger {
   }
 
   #formatMessage(level, message) {
-    return `======== ${[level]} ======== \n${message}`
+    return `${message}`
   }
 
   #print(color, message, level) {
@@ -27,7 +27,7 @@ class Logger {
     this.#print('red', message, 'ERROR')
   }
   debug(message, errorStack = null) {
-    if (errorStack && !this.isProduction)
+    if (errorStack && !this.#isProduction)
       message = `${message} \n ERROR STACK: ${errorStack}`
     this.#print('cyan', message, 'DEBUG')
   }
