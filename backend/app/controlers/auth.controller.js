@@ -16,6 +16,7 @@ import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { UserService } from '../services/user.services.js'
 import { validate } from '../shared/validation.shared.js'
 import { OtpService } from '../services/otp.services.js'
+import { EmailService } from '../services/email.services.js'
 
 // log Attempts
 export const logAttempt = async (ip, deviceInfo, status) => {
@@ -67,7 +68,8 @@ export const requestOtp = CatchAsyncError(async (request, response, next) => {
 
   // send mail
   if (userOtp) {
-    sendEmail(user.email, userOtp)
+    const emailText = `An OTP with a 6-digit code: ${userOtp}`
+    await EmailService.sendEmail(response, user.email, emailText)
   }
 
   // send response
