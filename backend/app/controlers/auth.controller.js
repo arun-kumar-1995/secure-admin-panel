@@ -14,11 +14,12 @@ import { sendToken } from '../shared/sendToken.Shared.js'
 import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
 import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { UserService } from '../services/user.services.js'
-import { validate } from '../shared/validation.shared.js'
+// import { validate } from '../shared/validation.shared.js'
 import { OtpService } from '../services/otp.services.js'
 import { EmailService } from '../services/email.services.js'
 import { LogService } from '../services/logs.service.js'
 import { AuthService } from '../services/auth.service.js'
+import { validate } from '../helpers/validate.helpers.js'
 
 // log Attempts
 export const logAttempt = async (ip, deviceInfo, status) => {
@@ -35,16 +36,7 @@ export const getLocalIp = CatchAsyncError(async (request, response, next) => {
 
 export const register = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
-
-  // const validation = validate(request.body, { email })
-  // if (!validation.isValid) {
-  // }
-  if (!email) {
-    throw new APIError(
-      HttpStatus.INVALID_REQUEST,
-      "Missing required parameter: - 'email'"
-    )
-  }
+  validate(request.body, { email })
 
   const user = await UserService.registerUser(response, request.body)
   return APIResponse(response, HttpStatus.SUCCESS, 'User registered', { user })
@@ -52,22 +44,16 @@ export const register = CatchAsyncError(async (request, response, next) => {
 
 export const requestOtp = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
-  if (!email)
-    return APIError(
-      response,
-      HttpStatus.INVALID_REQUEST,
-      "Missing required parameter: - 'email'"
-    )
+  validate(request.body, { email })
 
   const user = await UserService.validateUserByEmail(email)
   if (!user)
-    return APIError(
-      response,
+    throw new APIError(
       HttpStatus.NOT_FOUND,
       `Email:'${email}' is not registered`
     )
 
-  const userOtp = await OtpService.creatOtp(response, email)
+  const userOtp = await OtpService.creatOtp(email)
 
   // send mail
   if (userOtp) {
@@ -85,26 +71,12 @@ export const requestOtp = CatchAsyncError(async (request, response, next) => {
 
 export const verifyOtp = CatchAsyncError(async (request, response, next) => {
   const { email, otp, deviceInfo, ip } = request.body
-
-  if (!email)
-    return APIError(
-      response,
-      HttpStatus.INVALID_REQUEST,
-      "Missing 'Email' field in request"
-    )
-
-  if (!otp)
-    return APIError(
-      response,
-      HttpStatus.INVALID_REQUEST,
-      "Missing -'OTP' field inside response"
-    )
+  validate(request.body, { email, otp })
 
   const user = await UserService.validateUserByEmail(email)
 
   if (!user) {
-    return APIError(
-      response,
+    throw new APIError(
       HttpStatus.INVALID_REQUEST,
       "This email address doesn't exists"
     )
@@ -118,8 +90,7 @@ export const verifyOtp = CatchAsyncError(async (request, response, next) => {
     await UserService.updateUserProfile(user)
     await LogService.createLog(ip, deviceInfo, 'Failed')
 
-    return APIError(
-      response,
+    throw new APIError(
       HttpStatus.INVALID_REQUEST,
       "You entered incorrect 'OTP'"
     )

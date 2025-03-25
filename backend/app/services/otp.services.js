@@ -25,10 +25,9 @@ class Otp {
     return await OtpModel.createOtp(params)
   }
 
-  async creatOtp(response, email) {
+  async creatOtp(email) {
     if (!email)
-      return APIError(
-        response,
+      throw new APIError(
         HttpStatus.INVALID_REQUEST,
         "Missing 'email' parameter inside createOtp request"
       )
@@ -39,8 +38,7 @@ class Otp {
     const userOtp = await this.#saveOTP({ email, otp })
 
     if (!userOtp)
-      return APIError(
-        response,
+      throw new APIError(
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Error creating user otp'
       )
@@ -68,7 +66,7 @@ class Otp {
   }
 
   async deleteOTP(otpID) {
-    await OtpModel.deleteOne({ _id: otpID });
+    await OtpModel.deleteOne({ _id: otpID })
   }
 }
 
