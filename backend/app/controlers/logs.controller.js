@@ -1,5 +1,5 @@
 import { HttpStatus } from '../constants/httpStatus.constants.js';
-import { LogStatics } from '../models/logs.models.js';
+import { LogModel } from '../models/logs.models.js';
 import { APIResponse } from '../shared/apiResponse.shared.js';
 import { CatchAsyncError } from '../shared/catchAsyncError.shared.js';
 

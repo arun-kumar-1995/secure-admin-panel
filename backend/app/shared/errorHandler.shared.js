@@ -5,30 +5,42 @@ export const ErrorHandler = (response, statusCode, message) => {
     message,
   })
 }
-export const APIError = (response, http, message) => {
-  const { statusCode, code } = http
+// export const APIError = (response, http, message) => {
+//   const { statusCode, code } = http
 
-  // * handle exceptions
-  if (!message) throw new Error("Missing required parameter - 'message'")
+//   // * handle exceptions
+//   if (!message) throw new Error("Missing required parameter - 'message'")
 
-  // * Error response object
-  const errorResponse = {
-    success: false,
-    code,
-    statusCode,
-    message: message || 'An error has occurred',
-    // path: request.originalUrl || 'Unknown path',
-    // errors: [
-    //   {
-    //     message,
-    //     domain: request.hostname,
-    //   },
-    // ],
-    meta: {
-      timestamp: new Date().toISOString(),
-      domain: 'localhost',
-      // requestId: '', // user ID or IP address
-    },
+//   // * Error response object
+//   const errorResponse = {
+//     success: false,
+//     code,
+//     statusCode,
+//     message: message || 'An error has occurred',
+//     // path: request.originalUrl || 'Unknown path',
+//     // errors: [
+//     //   {
+//     //     message,
+//     //     domain: request.hostname,
+//     //   },
+//     // ],
+//     meta: {
+//       timestamp: new Date().toISOString(),
+//       domain: 'localhost',
+//       // requestId: '', // user ID or IP address
+//     },
+//   }
+//   response.status(statusCode).json({ error: errorResponse })
+// }
+
+export class APIError extends Error {
+  constructor(http, message) {
+    super(message)
+    const { statusCode, code } = http
+    this.code = code
+    this.statusCode = statusCode
+
+    // Since we are extending built in error class
+    Object.setPrototypeOf(this, APIError.prototype);
   }
-  response.status(statusCode).json({ error: errorResponse })
 }

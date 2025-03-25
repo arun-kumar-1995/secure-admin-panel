@@ -5,6 +5,7 @@
 import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { UserModal } from '../models/user.models.js'
 import { APIError } from '../shared/errorHandler.shared.js'
+import { EmailService } from './email.services.js'
 
 /**
  * User Service class
@@ -28,6 +29,10 @@ class Service {
    * @returns{Promise <Object|Void>} - Returns the created user object if registration is successful
    */
 
+  async findUser() {
+    return await UserModal.find()
+  }
+
   async registerUser(response, newUser) {
     const duplicate = await UserModal.findUserByEmail(newUser.email)
     if (duplicate)
@@ -36,7 +41,31 @@ class Service {
   }
 
   async validateUserByEmail(email) {
-    return await UserModal.findUserByEmail(email);
+    return await UserModal.findUserByEmail(email)
+  }
+
+  async resetUserProfile(user) {
+    user.loginAttempts = 0
+    await user.save()
+  }
+
+  async updateUserProfile(user) {
+    user.loginAttempts += 1
+    await user.save()
+  }
+
+  async lockUserProfile(response, user, ip) {
+    user.accountStatus = 'Locked'
+    await user.save()
+
+    // Send email to admin
+    const emailText = `An user with IP Address ${ip} is trying to access the route`
+    await EmailService.notifyAdmin(response, emailText)
+    return APIError(
+      response,
+      HttpStatus.FORBIDDEN,
+      'Your account has been locked'
+    )
   }
 }
 

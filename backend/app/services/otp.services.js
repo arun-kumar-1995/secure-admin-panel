@@ -47,6 +47,29 @@ class Otp {
 
     return userOtp.otp
   }
+
+  async #findOTP(userEmail, userOtp) {
+    return await OtpModel.findOne({ email: userEmail, otp: userOtp })
+  }
+
+  async validateOTP(response, userEmail, userOtp) {
+    const validOtp = await this.#findOTP(userEmail, userOtp)
+    if (!validOtp)
+      return APIError(
+        response,
+        HttpStatus.INVALID_REQUEST,
+        'You entered Invalid or expired OTP'
+      )
+
+    return {
+      matched: userOtp === valid.otp,
+      userOtp: validOtp._id,
+    }
+  }
+
+  async deleteOTP(otpID) {
+    await OtpModel.deleteOne({ _id: otpID });
+  }
 }
 
 /**

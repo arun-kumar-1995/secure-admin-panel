@@ -1,35 +1,49 @@
-export const errorMiddleware = (err, req, res, next) => {
-  let statusCode = err.statusCode || 500
-  let errorMessage = err.message || 'Internal Server Error'
+import { APIError } from '../shared/errorHandler.shared.js'
 
+export const errorMiddleware = (error, request, response, next) => {
+  let statusCode = error.statusCode || 500
+  let errorMessage = error.message || 'Internal Server Error'
+  let code = error.code || 'InternalServerError'
+
+  if (error instanceof APIError) {
+    code = error.code
+  }
   //reference error
-  if (err instanceof ReferenceError) {
+  if (error instanceof ReferenceError) {
     statusCode = 400
   }
 
   // MongoDB connection errors
-  if (err.name === 'MongoNetworkError') {
+  if (error.name === 'MongoNetworkError') {
     statusCode = 503
     errorMessage = 'Unable to connect to the database. Please try again later.'
   }
   // duplicate key error
-  if (err.code === 11000) {
+  if (error.code === 11000) {
     statusCode = 400
-    const field = Object.keys(err.keyValue)[0]
+    const field = Object.keys(error.keyValue)[0]
     errorMessage = `Duplicate value for ${field}. Please use a different value.`
   }
 
   // validation error
-  if (err.name === 'ValidationError') {
-    const fieldNames = Object.values(err.errors).map((err) => err.path)
+  if (error.name === 'ValidationError') {
+    const fieldNames = Object.values(error.errors).map((error) => error.path)
     errorMessage = `${fieldNames.join(', ')} is required.`
   }
 
-  // return the json response
-  return res.status(statusCode).json({
+  const errorResponse = {
     success: false,
-    message: errorMessage,
-    status: statusCode,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-  })
+    code,
+    statusCode,
+    message: errorMessage || 'An error has occurred',
+    meta: {
+      timestamp: new Date().toISOString(),
+      domain: 'localhost',
+      // requestId: '', // user ID or IP address
+    },
+    // ErrorStack:
+    // process.env.NODE_ENV === 'development' ? error.stack : undefined,
+  }
+  // return the json response
+  return response.status(statusCode).json({ error: errorResponse })
 }

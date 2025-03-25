@@ -18,8 +18,9 @@ const schema = new Schema(
       default: 0,
     },
     accountStatus: {
-      type: Boolean,
-      default: false,
+      type: String,
+      enum: ['Active', 'In-active', 'Locked'],
+      default: 'Active',
     },
   },
   { timestamps: true }

@@ -6,7 +6,7 @@ import { APIError, ErrorHandler } from '../shared/errorHandler.shared.js'
 import { sendEmail } from '../shared/sendEmail.shared.js'
 import { GenerateOtp } from '../shared/generateOtp.shared.js'
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
-import { LogStatics } from '../models/logs.models.js'
+import { LogModel } from '../models/logs.models.js'
 import { isValidLocalIP } from '../shared/validateIp.shared.js'
 import { IpBlocked } from '../models/blokedIps.models.js'
 import { generateToken } from '../shared/generateToken.shared.js'
@@ -17,6 +17,8 @@ import { UserService } from '../services/user.services.js'
 import { validate } from '../shared/validation.shared.js'
 import { OtpService } from '../services/otp.services.js'
 import { EmailService } from '../services/email.services.js'
+import { LogService } from '../services/logs.service.js'
+import { AuthService } from '../services/auth.service.js'
 
 // log Attempts
 export const logAttempt = async (ip, deviceInfo, status) => {
@@ -33,15 +35,16 @@ export const getLocalIp = CatchAsyncError(async (request, response, next) => {
 
 export const register = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
-  const validation = validate(request.body, { email })
-  if (!validation.isValid) {
-  }
-  if (!email)
-    return APIError(
-      response,
+
+  // const validation = validate(request.body, { email })
+  // if (!validation.isValid) {
+  // }
+  if (!email) {
+    throw new APIError(
       HttpStatus.INVALID_REQUEST,
       "Missing required parameter: - 'email'"
     )
+  }
 
   const user = await UserService.registerUser(response, request.body)
   return APIResponse(response, HttpStatus.SUCCESS, 'User registered', { user })
@@ -83,46 +86,57 @@ export const requestOtp = CatchAsyncError(async (request, response, next) => {
 export const verifyOtp = CatchAsyncError(async (request, response, next) => {
   const { email, otp, deviceInfo, ip } = request.body
 
-  if (!email) return ErrorHandler(response, 400, 'Email is required')
-  if (!otp) return ErrorHandler(response, 400, 'OTP is required')
+  if (!email)
+    return APIError(
+      response,
+      HttpStatus.INVALID_REQUEST,
+      "Missing 'Email' field in request"
+    )
 
-  const validOtp = await OTP.findOne({ email }).sort({ createdAt: -1 })
+  if (!otp)
+    return APIError(
+      response,
+      HttpStatus.INVALID_REQUEST,
+      "Missing -'OTP' field inside response"
+    )
 
-  if (!validOtp) return ErrorHandler(response, 400, 'Invalid or expired OTP')
-
-  const user = await findUserByEmail(email)
+  const user = await UserService.validateUserByEmail(email)
 
   if (!user) {
-    logAttempt(ip, deviceInfo, 'Failed')
-    return ErrorHandler(response, 400, 'Invalid email address')
+    return APIError(
+      response,
+      HttpStatus.INVALID_REQUEST,
+      "This email address doesn't exists"
+    )
   }
+
+  // validate otp
+  const validOTP = await OtpService.validateOTP(response, email, otp)
+
   // Check if OTP entered is the same
-  if (otp !== validOtp.otp) {
-    user.loginAttempts += 1
-    await user.save()
+  if (!validOTP.matched) {
+    await UserService.updateUserProfile(user)
+    await LogService.createLog(ip, deviceInfo, 'Failed')
 
-    if (user.loginAttempts >= 5) {
-      user.accountStatus = true
-      await user.save()
+    return APIError(
+      response,
+      HttpStatus.INVALID_REQUEST,
+      "You entered incorrect 'OTP'"
+    )
+  }
 
-      // Send email to admin
-      sendEmailToAdmin(ip)
-
-      return ErrorHandler(response, 400, 'Your profile is locked')
-    }
-
-    return ErrorHandler(response, 400, 'Incorrect OTP entered')
+  // lock profile when loginAttempts is >= 5
+  if (user.loginAttempts >= 5) {
+    await UserService.lockUserProfile(response, user, ip)
   }
 
   // Reset login attempts on successful OTP verification
-  user.loginAttempts = 0
-  await user.save()
-
-  // Delete OTP after successful verification
-  await OTP.deleteOne({ _id: validOtp._id })
-
-  // CREATE LOGS
-  logAttempt(ip, deviceInfo, 'Success')
+  const verified = await AuthService.verifyOTP(
+    user,
+    deviceInfo,
+    ip,
+    validOTP.userOtp
+  )
 
   // Generate token
   const token = await generateToken(email)
