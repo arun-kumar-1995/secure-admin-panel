@@ -1,3 +1,4 @@
+import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { AsyncWrapper } from '../helpers/asyncWrapper.helpers.js'
 import { EmailService } from './email.services.js'
 import { LogService } from './logs.service.js'
@@ -5,6 +6,16 @@ import { OtpService } from './otp.services.js'
 import { UserService } from './user.services.js'
 
 class Service {
+  async #createLogAndError(staticIP, deviceInfo) {
+    // CREATE LOGS
+    await LogService.createLog(staticIP, deviceInfo, 'Failed')
+    // throw error
+    throw new APIError(
+      HttpStatus.INVALID_REQUEST,
+      "You entered and Invalid 'IP Address'"
+    )
+  }
+
   async requestOTP(email) {
     // validate incoming user with email
     await UserService.validateUserByEmail(email)
@@ -23,7 +34,7 @@ class Service {
     const user = await UserService.validateUserByEmail(email)
 
     // validate user otp
-    const validOTP = await OtpService.validateOTP(email, otp);
+    const validOTP = await OtpService.validateOTP(email, otp)
 
     // Check if OTP entered is the same
     if (!validOTP.matched) {
@@ -48,7 +59,32 @@ class Service {
     await OtpService.deleteOTP(validOTP.otpId)
 
     // CREATE LOGS
-    await LogService.createLog(ip, deviceInfo, 'Success');
+    await LogService.createLog(ip, deviceInfo, 'Success')
+  }
+
+  async iPLogin({ staticIP, deviceInfo }) {
+    // find user through staticIp entered
+    const user = await UserService.findUserByIP(staticIP)
+    if (!user) {
+      await this.#createLogAndError(staticIP, deviceInfo)
+    }
+
+    // if static ip assignned is not same then
+    // lock account process for 5 attempt and send email
+
+    if (user.staticIP !== staticIP) {
+      // update login attempts
+      await UserService.updateLoginAttempts(user)
+      await this.#createLogAndError(staticIP, deviceInfo)
+    }
+
+    if (user.loginAttempts > 5) {
+      // perform user lock action
+      await UserService.lockUserProfile(user, staticIP)
+    }
+
+    // Create Logs for successfull login
+    await LogService.createLog(staticIP, deviceInfo, 'Success')
   }
 }
 

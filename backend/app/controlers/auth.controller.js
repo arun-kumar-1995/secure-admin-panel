@@ -20,14 +20,6 @@ import { LogService } from '../services/logs.service.js'
 import { AuthService } from '../services/auth.service.js'
 import { validate } from '../helpers/validate.helpers.js'
 
-// log Attempts
-export const logAttempt = async (ip, deviceInfo, status) => {
-  await Logs.create({ ip: ip || 'Unknown IP', deviceInfo, status })
-}
-
-// findUserByEmail
-export const findUserByEmail = async (email) => await User.findOne({ email })
-
 export const getLocalIp = CatchAsyncError(async (request, response, next) => {
   const ip = getLocalIP()
   APIResponse(response, 200, 'Client Local Ip', { ip })
@@ -45,7 +37,7 @@ export const requestOtp = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
   validate(request.body, { email })
 
-  await AuthService.requestOTP(email);
+  await AuthService.requestOTP(email)
   // send response
   return APIResponse(
     response,
@@ -59,53 +51,28 @@ export const verifyOtp = CatchAsyncError(async (request, response, next) => {
   // validate request parameters
   validate(request.body, { email, otp, deviceInfo, ip })
 
-  await AuthService.verifyOTP(request.body);
+  await AuthService.verifyOTP(request.body)
 
   // Generate token
-  const token = GenerateToken(email);
+  const token = GenerateToken(email)
 
   // Send token inside cookie
-  SendToken(response, token, 'OTP verified successfully');
+  SendToken(response, token, 'OTP verified successfully')
 })
 
 export const ipLogin = CatchAsyncError(async (request, response, next) => {
   const { staticIP, deviceInfo } = request.body
-  if (!staticIP) return ErrorHandler(response, 400, 'Enter Ip Address')
 
-  const user = await User.findOne({ staticIP })
-  if (!user) {
-    // CREATE LOGS
-    logAttempt(staticIP, deviceInfo, 'Failed')
-    return ErrorHandler(response, 400, 'Invalid Ip Address entered')
-  }
-  // if static ip assignned is not same then
-  // lock account process for 5 attempt and send email
+  // validate incoming parameter
+  validate(request.body, { staticIP, deviceInfo })
 
-  if (user.staticIP !== staticIP) {
-    user.loginAttempts = user.loginAttempts + 1
-    await user.save()
+  await AuthService.iPLogin(request.body)
 
-    // CREATE LOGS
-    logAttempt(staticIP, deviceInfo, 'Failed')
-    return ErrorHandler(response, 400, 'Invalid Ip Address entered')
-  }
-
-  if (user.loginAttempts > 5) {
-    // send email
-    sendEmailToAdmin(staticIP)
-    user.accountStatus = true
-    await user.save()
-    return ErrorHandler(response, 403, 'Your account is locked')
-  }
-
-  // CREATE LOGS
-  logAttempt(staticIP, deviceInfo, 'Success')
-
-  // generate token
-  const token = await generateToken(staticIP)
+  // generate token based on static ip
+  const token = GenerateToken(staticIP)
 
   // send token in cookie
-  sendToken(response, token, 'You are logged in')
+  SendToken(response, token, 'You are logged in');
 })
 
 export const blockIpAddress = CatchAsyncError(

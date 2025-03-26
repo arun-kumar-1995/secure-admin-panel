@@ -10,12 +10,12 @@ import { LogModel } from '../models/logs.models.js'
  */
 
 class Service {
-  async createLog(ipAddress, deviceInfo, status) {
-    await LogModel.create(ipAddress, deviceInfo, status);
+  async createLog(params) {
+    await LogModel.create({ params })
   }
 }
 
 /**
  *  Export log service as singleton
-*/
+ */
 export const LogService = new Service()

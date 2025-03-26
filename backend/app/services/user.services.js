@@ -36,7 +36,7 @@ class Service {
         HttpStatus.CONFLICT,
         "This 'Email' is already registered"
       )
-    return await UserModel.createUser(newUser).lean();
+    return await UserModel.createUser(newUser).lean()
   }
 
   async validateUserByEmail(email) {
@@ -50,12 +50,16 @@ class Service {
     return user
   }
 
+  async findUserByIP(staticIP) {
+    const user = await UserModel.findOne({ staticIP }).lean();
+    return user
+  }
   async resetUserProfile(user) {
     user.loginAttempts = 0
     await user.save()
   }
 
-  async updateUserProfile(user) {
+  async updateLoginAttempts(user) {
     user.loginAttempts += 1
     await user.save()
   }
@@ -66,7 +70,7 @@ class Service {
 
     // Send email to admin
     const emailText = `An user with IP Address ${ip} is trying to access the route`
-    await EmailService.notifyAdmin(emailText)
+    await EmailService.notifyAdmin(emailText);
     throw new APIError(HttpStatus.FORBIDDEN, 'Your account has been locked')
   }
 }
