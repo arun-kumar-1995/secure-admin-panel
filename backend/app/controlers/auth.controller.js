@@ -1,10 +1,9 @@
 import { CatchAsyncError } from '../shared/catchAsyncError.shared.js'
 import { APIResponse } from '../shared/apiResponse.shared.js'
-import { UserModal } from '../models/user.models.js'
+import { UserModel } from '../models/user.models.js'
 import { OTP } from '../schemas/otp.schemas.js'
 import { APIError, ErrorHandler } from '../shared/errorHandler.shared.js'
 import { sendEmail } from '../shared/sendEmail.shared.js'
-import { GenerateOtp } from '../shared/generateOtp.shared.js'
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
 import { LogModel } from '../models/logs.models.js'
 import { isValidLocalIP } from '../shared/validateIp.shared.js'
@@ -38,7 +37,7 @@ export const register = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
   validate(request.body, { email })
 
-  const user = await UserService.registerUser(response, request.body)
+  const user = await UserService.registerUser(request.body)
   return APIResponse(response, HttpStatus.SUCCESS, 'User registered', { user })
 })
 
@@ -46,26 +45,12 @@ export const requestOtp = CatchAsyncError(async (request, response, next) => {
   const { email } = request.body
   validate(request.body, { email })
 
-  const user = await UserService.validateUserByEmail(email)
-  if (!user)
-    throw new APIError(
-      HttpStatus.NOT_FOUND,
-      `Email:'${email}' is not registered`
-    )
-
-  const userOtp = await OtpService.creatOtp(email)
-
-  // send mail
-  if (userOtp) {
-    const emailText = `An OTP with a 6-digit code: ${userOtp}`
-    await EmailService.sendEmail(response, user.email, emailText)
-  }
-
+  await AuthService.requestOTP(email);
   // send response
   return APIResponse(
     response,
     HttpStatus.SUCCESS,
-    `An otp is send to email ${user.email}`
+    `An otp is send to email ${email} for verification`
   )
 })
 

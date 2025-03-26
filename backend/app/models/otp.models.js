@@ -28,7 +28,7 @@ class OtpModal extends Model {
   //  Otp Specific methods
   // ==========================
 
-  async createOtp(props) {
+  async create(props) {
     return await this.Otp.create(props)
   }
   async deleteOne(props) {

@@ -36,10 +36,9 @@ class Email {
     })
   }
 
-  #sendError(response, err) {
+  #sendError(err) {
     if (err) {
-      return APIError(
-        response,
+      throw new APIError(
         HttpStatus.INTERNAL_SERVER_ERROR,
         `Error sending mail :
           ${err.message}`
@@ -47,7 +46,7 @@ class Email {
     }
   }
 
-  async #sendMail(response, { to, subject, text }) {
+  async #sendMail({ to, subject, text }) {
     try {
       const mailOptions = {
         from: this.#senderEmail,
@@ -57,26 +56,26 @@ class Email {
       }
       await this.#transporter.sendMail(mailOptions)
     } catch (err) {
-      this.#sendError(response, err)
+      this.#sendError(err)
     }
   }
 
-  async sendEmail(response, userEmail, emailText) {
+  async sendEmail(userEmail, emailText) {
     const options = {
       to: userEmail,
       subject: 'OTP Verification',
       text: emailText,
     }
-    return this.#sendMail(response, { ...options })
+    return this.#sendMail({ ...options })
   }
 
-  async notifyAdmin(response, emailText) {
+  async notifyAdmin(emailText) {
     const options = {
       to: this.#adminEmail,
       subject: 'Unauthorized Attempt',
       text: emailText,
     }
-    return this.#sendMail(response, { ...options })
+    return this.#sendMail({ ...options })
   }
 }
 

@@ -3,7 +3,7 @@
  */
 
 import { HttpStatus } from '../constants/httpStatus.constants.js'
-import { UserModal } from '../models/user.models.js'
+import { UserModel } from '../models/user.models.js'
 import { APIError } from '../shared/errorHandler.shared.js'
 import { EmailService } from './email.services.js'
 
@@ -29,19 +29,23 @@ class Service {
    * @returns{Promise <Object|Void>} - Returns the created user object if registration is successful
    */
 
-  async findUser() {
-    return await UserModal.find()
-  }
-
-  async registerUser(response, newUser) {
-    const duplicate = await UserModal.findUserByEmail(newUser.email)
+  async registerUser(newUser) {
+    const duplicate = await UserModel.findOne({ email: newUser.email })
     if (duplicate)
-      return APIError(response, HttpStatus.CONFLICT, 'Email already registered')
-    return await UserModal.createUser(newUser)
+      throw new APIError(
+        HttpStatus.CONFLICT,
+        "This 'Email' is already registered"
+      )
+    return await UserModel.createUser(newUser).lean()
   }
 
   async validateUserByEmail(email) {
-    return await UserModal.findUserByEmail(email)
+    const user = await UserModel.findOne({ email })
+    if (!user)
+      throw new APIError(
+        HttpStatus.NOT_FOUND,
+        `Email:'${email}' is not registered`
+      )
   }
 
   async resetUserProfile(user) {
@@ -54,18 +58,14 @@ class Service {
     await user.save()
   }
 
-  async lockUserProfile(response, user, ip) {
+  async lockUserProfile(user, ip) {
     user.accountStatus = 'Locked'
     await user.save()
 
     // Send email to admin
     const emailText = `An user with IP Address ${ip} is trying to access the route`
-    await EmailService.notifyAdmin(response, emailText)
-    return APIError(
-      response,
-      HttpStatus.FORBIDDEN,
-      'Your account has been locked'
-    )
+    await EmailService.notifyAdmin(emailText)
+    throw new APIError(HttpStatus.FORBIDDEN, 'Your account has been locked')
   }
 }
 

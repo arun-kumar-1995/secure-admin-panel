@@ -16,7 +16,7 @@ import { Model } from '../helpers/baseModel.helpers.js'
  * while allowing for specific user-related queries.
  */
 
-class UserModel extends Model {
+class UserModal extends Model {
   /**
    * Constructor for UserModel
    *
@@ -40,8 +40,12 @@ class UserModel extends Model {
    * @param {string} email - The email of the user to find
    * @returns {Promise<Object|null>} - Returns the user document or null if not found
    */
-  async findUserByEmail(email) {
-    return await this.User.findOne({ email })
+  async findOne(params) {
+    return await this.User.findOne(params)
+  }
+
+  async findById(id) {
+    return await this.User.findById(id)
   }
 
   /**
@@ -58,4 +62,4 @@ class UserModel extends Model {
 /**
  * Export an instance of the UserModel to be used across the application
  */
-export const UserModal = new UserModel(User)
+export const UserModel = new UserModal(User)

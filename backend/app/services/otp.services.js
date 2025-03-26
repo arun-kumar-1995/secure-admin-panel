@@ -5,7 +5,7 @@
 import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { OtpModel } from '../models/otp.models.js'
 import { APIError } from '../shared/errorHandler.shared.js'
-
+import { GenerateOtp } from '../helpers/generateOtp.helpers.js'
 /**
  * Define OTP Class
  *
@@ -13,29 +13,11 @@ import { APIError } from '../shared/errorHandler.shared.js'
  **/
 
 class Otp {
-  #generateOtp() {
-    let otp = ''
-    for (let i = 0; i < 6; i++) {
-      otp += Math.floor(Math.random() * 10)
-    }
-    return otp
-  }
-
-  async #saveOTP(params) {
-    return await OtpModel.createOtp(params)
-  }
-
   async creatOtp(email) {
-    if (!email)
-      throw new APIError(
-        HttpStatus.INVALID_REQUEST,
-        "Missing 'email' parameter inside createOtp request"
-      )
-
-    const otp = this.#generateOtp()
-
-    // save to database
-    const userOtp = await this.#saveOTP({ email, otp })
+    // get 6 digit otp
+    const otp = GenerateOtp();
+    // create otp document
+    const userOtp = await OtpModel.create({ email, otp })
 
     if (!userOtp)
       throw new APIError(
@@ -43,7 +25,7 @@ class Otp {
         'Error creating user otp'
       )
 
-    return userOtp.otp
+    return userOtp.otp;
   }
 
   async #findOTP(userEmail, userOtp) {
