@@ -1,10 +1,17 @@
-import { HttpStatus } from '../constants/httpStatus.constants.js';
-import { LogModel } from '../models/logs.models.js';
-import { APIResponse } from '../shared/apiResponse.shared.js';
-import { CatchAsyncError } from '../shared/catchAsyncError.shared.js';
+import { HttpStatus } from '../constants/httpStatus.constants.js'
+import { LogModel } from '../models/logs.models.js'
+import { APIResponse } from '../shared/apiResponse.shared.js'
+import { CatchAsyncError } from '../shared/catchAsyncError.shared.js'
 
-export const getAccessLogs = CatchAsyncError(async (req, res, next) => {
-  const logs = await LogStatics.find().sort({ _id: -1 })
-  
-  return APIResponse(res, HttpStatus.SUCCESS, 'Here are the access logs', { logs })
-})
+export const getAccessLogs = CatchAsyncError(
+  async (request, response, next) => {
+    const logs = await LogModel.find({}).sort({ _id: -1 })
+
+    return APIResponse(
+      response,
+      HttpStatus.SUCCESS,
+      'Here are the access logs',
+      { logs }
+    )
+  }
+)

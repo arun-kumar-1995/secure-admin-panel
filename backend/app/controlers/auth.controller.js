@@ -79,7 +79,7 @@ export const blockIpAddress = CatchAsyncError(
     const { ip } = request.body
     validate(request.body, { ip })
 
-    await AuthService.blockIPs(ip)
+    await AuthService.blockIPs(ip);
 
     return APIResponse(
       response,
