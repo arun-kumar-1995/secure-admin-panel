@@ -1,5 +1,6 @@
 import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { AsyncWrapper } from '../helpers/asyncWrapper.helpers.js'
+import { BlockIPModel } from '../models/blockIPs.models.js'
 import { EmailService } from './email.services.js'
 import { LogService } from './logs.service.js'
 import { OtpService } from './otp.services.js'
@@ -86,6 +87,19 @@ class Service {
     // Create Logs for successfull login
     await LogService.createLog(staticIP, deviceInfo, 'Success')
   }
+
+  async blockIPs(ipAdrr) {
+    // find the ip address schema
+    let isBlocked = await BlockIPModel.find(ipAdrr)
+    if (isBlocked)
+      throw new Error(
+        HttpStatus.SUCCESS,
+        `IP Address:- ${ipAdrr} is successfully blocked.`
+      )
+
+    // block ip
+    await BlockIPModel.createBlockIP({ blockedIP: ipAdrr })
+  }
 }
 
-export const AuthService = new Service()
+export const AuthService = new Service();

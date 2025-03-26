@@ -1,12 +1,11 @@
 'use strict'
 
-import {Schema , model } from 'mongoose';
+import { Schema, model } from 'mongoose'
 
 const schema = new Schema(
   {
-    blockedIps: {
-      type: [String],
-      default: [],
+    blockedIP: {
+      type: String,
     },
   },
   { timestamps: true }

@@ -7,7 +7,6 @@ import { sendEmail } from '../shared/sendEmail.shared.js'
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
 import { LogModel } from '../models/logs.models.js'
 import { isValidLocalIP } from '../shared/validateIp.shared.js'
-import { IpBlocked } from '../models/blokedIps.models.js'
 import { GenerateToken } from '../shared/generateToken.shared.js'
 import { SendToken } from '../shared/sendToken.Shared.js'
 import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
@@ -72,39 +71,20 @@ export const ipLogin = CatchAsyncError(async (request, response, next) => {
   const token = GenerateToken(staticIP)
 
   // send token in cookie
-  SendToken(response, token, 'You are logged in');
+  SendToken(response, token, 'You are logged in')
 })
 
 export const blockIpAddress = CatchAsyncError(
   async (request, response, next) => {
     const { ip } = request.body
+    validate(request.body, { ip })
 
-    if (!ip) {
-      return ErrorHandler(
-        response,
-        400,
-        'IP address is required to be blocked.'
-      )
-    }
+    await AuthService.blockIPs(ip)
 
-    // Find existing blocked list
-    let blockedList = await IpBlocked.findOne()
-
-    if (!blockedList) {
-      // Create new document if none exists
-      blockedList = await IpBlocked.create({ blockedIps: [ip] })
-      return APIResponse(response, 200, 'IP address is successfully blocked.')
-    }
-
-    // Check if IP is already blocked
-    if (blockedList.blockedIps.includes(ip)) {
-      return ErrorHandler(response, 400, 'IP address is already blocked.')
-    }
-
-    // Add new IP and save
-    blockedList.blockedIps.push(ip)
-    await blockedList.save()
-
-    return APIResponse(response, 200, 'IP address is successfully blocked.')
+    return APIResponse(
+      response,
+      HttpStatus.SUCCESS,
+      `IP Address:- ${ipAdrr} is successfully blocked.`
+    )
   }
 )
