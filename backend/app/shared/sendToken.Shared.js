@@ -1,4 +1,4 @@
-export const sendToken = (res, token, message) => {
+export const SendToken = (res, token, message) => {
   return res
     .status(200)
     .cookie('token', token, {

@@ -15,7 +15,7 @@ import { GenerateOtp } from '../helpers/generateOtp.helpers.js'
 class Otp {
   async creatOtp(email) {
     // get 6 digit otp
-    const otp = GenerateOtp();
+    const otp = GenerateOtp()
     // create otp document
     const userOtp = await OtpModel.create({ email, otp })
 
@@ -25,30 +25,25 @@ class Otp {
         'Error creating user otp'
       )
 
-    return userOtp.otp;
+    return userOtp.otp
   }
 
-  async #findOTP(userEmail, userOtp) {
-    return await OtpModel.findOne({ email: userEmail, otp: userOtp })
-  }
-
-  async validateOTP(response, userEmail, userOtp) {
-    const validOtp = await this.#findOTP(userEmail, userOtp)
+  async validateOTP(userEmail, userOtp) {
+    const validOtp = await OtpModel.findOne({ email: userEmail, otp: userOtp })
     if (!validOtp)
-      return APIError(
-        response,
+      throw new APIError(
         HttpStatus.INVALID_REQUEST,
         'You entered Invalid or expired OTP'
       )
 
     return {
       matched: userOtp === valid.otp,
-      userOtp: validOtp._id,
+      otpId: validOtp._id,
     }
   }
 
-  async deleteOTP(otpID) {
-    await OtpModel.deleteOne({ _id: otpID })
+  async deleteOTP(otpId) {
+    await OtpModel.deleteOne({ _id: otpId })
   }
 }
 

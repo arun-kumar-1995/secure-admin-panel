@@ -34,6 +34,9 @@ class OtpModal extends Model {
   async deleteOne(props) {
     return await this.Otp.deleteOne(props)
   }
+  async findOne(props) {
+    return await this.Otp.findOne(props)
+  }
 }
 
 /**

@@ -36,16 +36,18 @@ class Service {
         HttpStatus.CONFLICT,
         "This 'Email' is already registered"
       )
-    return await UserModel.createUser(newUser).lean()
+    return await UserModel.createUser(newUser).lean();
   }
 
   async validateUserByEmail(email) {
-    const user = await UserModel.findOne({ email })
+    const user = await UserModel.findOne({ email }).lean()
     if (!user)
       throw new APIError(
         HttpStatus.NOT_FOUND,
         `Email:'${email}' is not registered`
       )
+
+    return user
   }
 
   async resetUserProfile(user) {

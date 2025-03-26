@@ -8,8 +8,8 @@ import { getLocalIP } from '../shared/getLocalIp.shared.js'
 import { LogModel } from '../models/logs.models.js'
 import { isValidLocalIP } from '../shared/validateIp.shared.js'
 import { IpBlocked } from '../models/blokedIps.models.js'
-import { generateToken } from '../shared/generateToken.shared.js'
-import { sendToken } from '../shared/sendToken.Shared.js'
+import { GenerateToken } from '../shared/generateToken.shared.js'
+import { SendToken } from '../shared/sendToken.Shared.js'
 import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
 import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { UserService } from '../services/user.services.js'
@@ -56,48 +56,16 @@ export const requestOtp = CatchAsyncError(async (request, response, next) => {
 
 export const verifyOtp = CatchAsyncError(async (request, response, next) => {
   const { email, otp, deviceInfo, ip } = request.body
-  validate(request.body, { email, otp })
+  // validate request parameters
+  validate(request.body, { email, otp, deviceInfo, ip })
 
-  const user = await UserService.validateUserByEmail(email)
-
-  if (!user) {
-    throw new APIError(
-      HttpStatus.INVALID_REQUEST,
-      "This email address doesn't exists"
-    )
-  }
-
-  // validate otp
-  const validOTP = await OtpService.validateOTP(response, email, otp)
-
-  // Check if OTP entered is the same
-  if (!validOTP.matched) {
-    await UserService.updateUserProfile(user)
-    await LogService.createLog(ip, deviceInfo, 'Failed')
-
-    throw new APIError(
-      HttpStatus.INVALID_REQUEST,
-      "You entered incorrect 'OTP'"
-    )
-  }
-
-  // lock profile when loginAttempts is >= 5
-  if (user.loginAttempts >= 5) {
-    await UserService.lockUserProfile(response, user, ip)
-  }
-
-  // Reset login attempts on successful OTP verification
-  const verified = await AuthService.verifyOTP(
-    user,
-    deviceInfo,
-    ip,
-    validOTP.userOtp
-  )
+  await AuthService.verifyOTP(request.body);
 
   // Generate token
-  const token = await generateToken(email)
-  // Send token in cookie
-  sendToken(response, token, 'OTP verified successfully')
+  const token = GenerateToken(email);
+
+  // Send token inside cookie
+  SendToken(response, token, 'OTP verified successfully');
 })
 
 export const ipLogin = CatchAsyncError(async (request, response, next) => {
