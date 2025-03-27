@@ -8,6 +8,8 @@ export const validate = (body, fields) => {
       errors.push(`'${field}'`)
     }
   }
-  const message = `Missing required field: ${errors.join(' & ')}`
-  throw new APIError(HttpStatus.INVALID_REQUEST, message)
+  if (errors.length > 0) {
+    const message = `Missing required field: ${errors.join(' & ')}`
+    throw new APIError(HttpStatus.INVALID_REQUEST, message)
+  }
 }

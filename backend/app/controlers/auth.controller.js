@@ -1,21 +1,10 @@
 import { CatchAsyncError } from '../shared/catchAsyncError.shared.js'
 import { APIResponse } from '../shared/apiResponse.shared.js'
-import { UserModel } from '../models/user.models.js'
-import { OTP } from '../schemas/otp.schemas.js'
-import { APIError, ErrorHandler } from '../shared/errorHandler.shared.js'
-import { sendEmail } from '../shared/sendEmail.shared.js'
 import { getLocalIP } from '../shared/getLocalIp.shared.js'
-import { LogModel } from '../models/logs.models.js'
-import { isValidLocalIP } from '../shared/validateIp.shared.js'
 import { GenerateToken } from '../shared/generateToken.shared.js'
 import { SendToken } from '../shared/sendToken.Shared.js'
-import { sendEmailToAdmin } from '../shared/sendEmailToAdmin.shared.js'
 import { HttpStatus } from '../constants/httpStatus.constants.js'
 import { UserService } from '../services/user.services.js'
-// import { validate } from '../shared/validation.shared.js'
-import { OtpService } from '../services/otp.services.js'
-import { EmailService } from '../services/email.services.js'
-import { LogService } from '../services/logs.service.js'
 import { AuthService } from '../services/auth.service.js'
 import { validate } from '../helpers/validate.helpers.js'
 
@@ -41,7 +30,7 @@ export const requestOtp = CatchAsyncError(async (request, response, next) => {
   return APIResponse(
     response,
     HttpStatus.SUCCESS,
-    `An otp is send to email ${email} for verification`
+    `An otp is send to Email:- '${email}' for verification`
   )
 })
 
@@ -53,7 +42,7 @@ export const verifyOtp = CatchAsyncError(async (request, response, next) => {
   await AuthService.verifyOTP(request.body)
 
   // Generate token
-  const token = GenerateToken(email)
+  const token = await GenerateToken(email)
 
   // Send token inside cookie
   SendToken(response, token, 'OTP verified successfully')
@@ -68,7 +57,7 @@ export const ipLogin = CatchAsyncError(async (request, response, next) => {
   await AuthService.iPLogin(request.body)
 
   // generate token based on static ip
-  const token = GenerateToken(staticIP)
+  const token = await GenerateToken(staticIP)
 
   // send token in cookie
   SendToken(response, token, 'You are logged in')
@@ -79,7 +68,7 @@ export const blockIpAddress = CatchAsyncError(
     const { ip } = request.body
     validate(request.body, { ip })
 
-    await AuthService.blockIPs(ip);
+    await AuthService.blockIPs(ip)
 
     return APIResponse(
       response,

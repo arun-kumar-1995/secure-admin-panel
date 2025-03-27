@@ -36,11 +36,11 @@ class Service {
         HttpStatus.CONFLICT,
         "This 'Email' is already registered"
       )
-    return await UserModel.createUser(newUser).lean()
+    return await UserModel.createUser(newUser);
   }
 
   async validateUserByEmail(email) {
-    const user = await UserModel.findOne({ email }).lean()
+    const user = await UserModel.findOne({ email });
     if (!user)
       throw new APIError(
         HttpStatus.NOT_FOUND,
@@ -51,7 +51,7 @@ class Service {
   }
 
   async findUserByIP(staticIP) {
-    const user = await UserModel.findOne({ staticIP }).lean();
+    const user = await UserModel.findOne({ staticIP });
     return user
   }
   async resetUserProfile(user) {

@@ -29,7 +29,7 @@ class Otp {
   }
 
   async validateOTP(userEmail, userOtp) {
-    const validOtp = await OtpModel.findOne({ email: userEmail, otp: userOtp })
+    const validOtp = await OtpModel.findOne({ email: userEmail})
     if (!validOtp)
       throw new APIError(
         HttpStatus.INVALID_REQUEST,
@@ -37,7 +37,7 @@ class Otp {
       )
 
     return {
-      matched: userOtp === valid.otp,
+      matched: userOtp === validOtp.otp,
       otpId: validOtp._id,
     }
   }

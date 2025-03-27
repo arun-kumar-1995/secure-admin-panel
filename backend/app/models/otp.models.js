@@ -35,7 +35,7 @@ class OtpModal extends Model {
     return await this.Otp.deleteOne(props)
   }
   async findOne(props) {
-    return await this.Otp.findOne(props)
+    return await this.Otp.findOne(props).sort({ createdAt: -1 });
   }
 }
 

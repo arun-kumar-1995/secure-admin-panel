@@ -10,8 +10,8 @@ import { LogModel } from '../models/logs.models.js'
  */
 
 class Service {
-  async createLog(params) {
-    await LogModel.create({ params })
+  async createLog(ip, deviceInfo, status) {
+    await LogModel.create(ip, deviceInfo, status)
   }
 }
 

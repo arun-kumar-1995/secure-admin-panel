@@ -1,11 +1,10 @@
 import { HttpStatus } from '../constants/httpStatus.constants.js'
-import { AsyncWrapper } from '../helpers/asyncWrapper.helpers.js'
 import { BlockIPModel } from '../models/blockIPs.models.js'
+import { APIError } from '../shared/errorHandler.shared.js'
 import { EmailService } from './email.services.js'
 import { LogService } from './logs.service.js'
 import { OtpService } from './otp.services.js'
 import { UserService } from './user.services.js'
-
 class Service {
   async #createLogAndError(staticIP, deviceInfo) {
     // CREATE LOGS
@@ -38,8 +37,8 @@ class Service {
     const validOTP = await OtpService.validateOTP(email, otp)
 
     // Check if OTP entered is the same
-    if (!validOTP.matched) {
-      await UserService.updateUserProfile(user)
+    if (!validOTP.matched && user.loginAttempts < 5) {
+      await UserService.updateLoginAttempts(user)
       await LogService.createLog(ip, deviceInfo, 'Failed')
 
       throw new APIError(
@@ -49,7 +48,8 @@ class Service {
     }
 
     // lock profile when loginAttempts is >= 5
-    if (user.loginAttempts >= 5) {
+    if (!validOTP.matched && user.loginAttempts >= 5) {
+      await LogService.createLog(ip, deviceInfo, 'Locked')
       await UserService.lockUserProfile(user, ip)
     }
 
@@ -70,36 +70,23 @@ class Service {
       await this.#createLogAndError(staticIP, deviceInfo)
     }
 
-    // if static ip assignned is not same then
-    // lock account process for 5 attempt and send email
-
-    if (user.staticIP !== staticIP) {
-      // update login attempts
-      await UserService.updateLoginAttempts(user)
-      await this.#createLogAndError(staticIP, deviceInfo)
-    }
-
-    if (user.loginAttempts > 5) {
-      // perform user lock action
-      await UserService.lockUserProfile(user, staticIP)
-    }
-
     // Create Logs for successfull login
     await LogService.createLog(staticIP, deviceInfo, 'Success')
   }
 
   async blockIPs(ipAdrr) {
     // find the ip address schema
-    let isBlocked = await BlockIPModel.find(ipAdrr)
+    let isBlocked = await BlockIPModel.findOne(ipAdrr)
+
     if (isBlocked)
-      throw new Error(
+      throw new APIError(
         HttpStatus.SUCCESS,
         `IP Address:- ${ipAdrr} is successfully blocked.`
       )
 
     // block ip
-    await BlockIPModel.createBlockIP({ blockedIP: ipAdrr })
+    await BlockIPModel.createBlockIP(ipAdrr)
   }
 }
 
-export const AuthService = new Service();
+export const AuthService = new Service()

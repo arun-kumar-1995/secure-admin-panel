@@ -18,15 +18,19 @@ class LogModal extends Model {
    */
   constructor(logModel) {
     super(logModel)
-    this.logs = logModel
+    this.Logs = logModel
   }
 
   // ====================== //
   // Logs Specified Methods //
   // =====================//
 
-  async create(ipAddress, deviceInfo, status) {
-    await this.logs.create({ ip: ipAddress, deviceInfo, status })
+  async create(ip, deviceInfo, status) {
+    await this.Logs.create({ ip, deviceInfo, status })
+  }
+
+  async find(query) {
+    return await this.Logs.find(query).sort({ _id: -1 });
   }
 }
 

@@ -7,15 +7,13 @@ class BlockIPModal extends Model {
     this.BlockIP = blockIPModel
   }
 
-  async find(ipAdrr) {
-    return await this.BlockIP.find({blockedIP: ipAdrr})
+  async findOne(ipAdrr) {
+    return await this.BlockIP.findOne({ blockedIP: ipAdrr }).lean();
   }
 
   async createBlockIP(props) {
-    return await this.BlockIP.create(props)
+    await this.BlockIP.create({ blockedIP: props })
   }
-
-
 }
 
-export const BlockIPModel = new BlockIPModal(IpBlocked);
+export const BlockIPModel = new BlockIPModal(IpBlocked)

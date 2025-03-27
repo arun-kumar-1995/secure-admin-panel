@@ -14,7 +14,7 @@ const schema = new Schema(
     },
     status: {
       type: String,
-      enum: ['Success', 'Failed', 'Blocked'],
+      enum: ['Success', 'Failed', 'Locked'],
     },
   },
   { timestamps: true }

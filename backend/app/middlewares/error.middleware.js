@@ -23,12 +23,14 @@ export const errorMiddleware = (error, request, response, next) => {
     statusCode = 400
     const field = Object.keys(error.keyValue)[0]
     errorMessage = `Duplicate value for ${field}. Please use a different value.`
+    code = 'DuplicateKeyError'
   }
 
   // validation error
   if (error.name === 'ValidationError') {
     const fieldNames = Object.values(error.errors).map((error) => error.path)
     errorMessage = `${fieldNames.join(', ')} is required.`
+    code = error.name
   }
 
   const errorResponse = {
@@ -42,7 +44,7 @@ export const errorMiddleware = (error, request, response, next) => {
       // requestId: '', // user ID or IP address
     },
     // ErrorStack:
-    // process.env.NODE_ENV === 'development' ? error.stack : undefined,
+    //   process.env.NODE_ENV === 'development' ? error.stack : undefined,
   }
   // return the json response
   return response.status(statusCode).json({ error: errorResponse })

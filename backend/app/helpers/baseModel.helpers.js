@@ -57,7 +57,7 @@ class Model {
    * @returns {Promise<Object>} - The created document
    */
   async create(data) {
-    return await this.model.create(data)
+    return await this.model.create(data);
   }
 
   /**

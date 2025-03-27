@@ -5,7 +5,7 @@ import { CatchAsyncError } from '../shared/catchAsyncError.shared.js'
 
 export const getAccessLogs = CatchAsyncError(
   async (request, response, next) => {
-    const logs = await LogModel.find({}).sort({ _id: -1 })
+    const logs = await LogModel.find({});
 
     return APIResponse(
       response,
